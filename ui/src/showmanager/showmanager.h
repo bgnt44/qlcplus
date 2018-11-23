@@ -28,6 +28,7 @@
 #include "sequenceitem.h"
 #include "trackitem.h"
 #include "scene.h"
+#include "sequence.h"
 #include "show.h"
 #include "doc.h"
 
@@ -98,7 +99,13 @@ private:
     void showSceneEditor(Scene *scene);
     void hideRightEditor();
     void showRightEditor(Function *function);
-
+    Track* FindTrackScene(quint32 sceneId);
+    QString FindTrackSequence(Sequence* seq);
+    Track* CreateTrack(QString trackname,int id,QStringList channelTypes);
+    Track* GetTrackOrCreate(Function* fct);
+    void slotAddScene(Function* selectedFunc);
+    void slotAddSequence(Function* selectedFunc);
+    QStringList GetChannelsTrack(Scene* scene,Fixture* fixture);
 private:
     QSplitter* m_splitter; // main view splitter (horizontal)
     QSplitter* m_vsplitter; // multitrack view splitter (vertical)
@@ -115,7 +122,7 @@ protected:
 
 private:
     bool checkOverlapping(quint32 startTime, quint32 duration);
-
+    bool bCopyScene;
     QToolBar* m_toolbar;
     QComboBox* m_showsCombo;
     QLabel* m_timeLabel;
@@ -124,6 +131,7 @@ private:
     QAction* m_addSequenceAction;
     QAction* m_addAudioAction;
     QAction* m_addVideoAction;
+    QAction* m_copySceneAction;
     QAction* m_copyAction;
     QAction* m_pasteAction;
     QAction* m_deleteAction;
@@ -136,6 +144,7 @@ private:
     QComboBox* m_timeDivisionCombo;
     QSpinBox* m_bpmField;
 
+    QAction* m_seqPropagate;
 protected slots:
     /** Slot called when the user selects a show from
      *  the shows combo box */
@@ -148,7 +157,8 @@ protected slots:
     void slotAddSequence();
     void slotAddAudio();
     void slotAddVideo();
-
+    void slotCopyScene(bool enable);
+    void slotPropagate();
     void slotCopy();
     void slotPaste();
     void slotDelete();

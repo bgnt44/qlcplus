@@ -33,6 +33,7 @@ ShowItem::ShowItem(ShowFunction *function, QObject *)
     , m_locked(false)
     , m_pressed(false)
     , m_width(50)
+    , m_height(TRACK_HEIGHT - 3)
     , m_timeScale(3)
     , m_trackIdx(-1)
     , m_function(function)
@@ -145,7 +146,16 @@ int ShowItem::getWidth()
 {
     return m_width;
 }
+void ShowItem::setHeight(int h)
+{
+    m_height = h;
+    updateTooltip();
+}
 
+int ShowItem::getHeight()
+{
+    return m_height;
+}
 QPointF ShowItem::getDraggingPos()
 {
     return m_pos;
@@ -268,7 +278,7 @@ void ShowItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 QRectF ShowItem::boundingRect() const
 {
-    return QRectF(0, 0, m_width, TRACK_HEIGHT - 3);
+    return QRectF(0, 0, m_width, m_height);
 }
 
 void ShowItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -283,7 +293,7 @@ void ShowItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
 
     // draw item background
     painter->setBrush(QBrush(m_color));
-    painter->drawRect(0, 0, m_width, TRACK_HEIGHT - 3);
+    painter->drawRect(0, 0, m_width, m_height);
 
     painter->setFont(m_font);
 }
@@ -299,7 +309,7 @@ void ShowItem::postPaint(QPainter *painter)
     painter->drawText(QRect(3, 5, m_width - 5, 72), Qt::AlignLeft | Qt::TextWordWrap, functionName());
 
     if (m_locked)
-        painter->drawPixmap(3, TRACK_HEIGHT >> 1, 24, 24, QIcon(":/lock.png").pixmap(24, 24));
+        painter->drawPixmap(3, m_height >> 1, 24, 24, QIcon(":/lock.png").pixmap(24, 24));
 
     if (m_pressed)
     {
@@ -307,7 +317,7 @@ void ShowItem::postPaint(QPainter *painter)
         if (x() > TRACK_WIDTH)
             s_time = (double)(x() - TRACK_WIDTH - 2) * (m_timeScale * 500) /
                      (double)(HALF_SECOND_WIDTH);
-        painter->drawText(3, TRACK_HEIGHT - 10, Function::speedToString(s_time));
+        painter->drawText(3, m_height - 10, Function::speedToString(s_time));
     }
 }
 

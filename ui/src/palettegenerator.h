@@ -110,6 +110,7 @@ public:
     static QStringList getCapabilities(const Fixture* fixture);
 
     QList<Scene *> scenes();
+    QHash<QString,QList<Scene *>> multiscenes();
     QList<Chaser *> chasers();
     QList<RGBMatrix *> matrices();
 
@@ -124,6 +125,7 @@ private:
                            QString name, bool rgb, PaletteSubType subType);
 
     void createCapabilityScene(QHash<quint32, quint32> chMap, PaletteSubType subType);
+    void createCapabilityScene(QHash<quint32, QList<quint32>> chMap, PaletteGenerator::PaletteSubType subType);
 
     void createRGBMatrices(QList<SceneValue> rgbMap);
 
@@ -147,6 +149,7 @@ private:
     FixtureGroup *m_fixtureGroup;
     QString m_model;
     QList <Scene*> m_scenes;
+    QHash<QString,QList<Scene *>> m_multiscenes;
     QList <Chaser*> m_chasers;
     QList <RGBMatrix*> m_matrices;
 };

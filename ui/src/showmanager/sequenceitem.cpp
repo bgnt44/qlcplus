@@ -91,22 +91,22 @@ void SequenceItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
             if (fadeXpos - xpos > 5)
             {
                 painter->setPen(QPen(Qt::gray, 1));
-                painter->drawLine(xpos, TRACK_HEIGHT - 4, fadeXpos, 1);
+                painter->drawLine(xpos, getHeight() - 4, fadeXpos, 1);
             }
         }
         float stepWidth = ((timeScale * (float)stepDuration) / 1000);
         // draw selected step
         if (stepIdx == m_selectedStep)
         {
-            painter->setPen(QPen(Qt::yellow, 2));
+            painter->setPen(QPen(Qt::green, 3));
             painter->setBrush(QBrush(Qt::NoBrush));
-            painter->drawRect(xpos, 0, stepWidth, TRACK_HEIGHT - 3);
+            painter->drawRect(xpos, 0, stepWidth, getHeight() - 3);
         }
         xpos += stepWidth;
 
         // draw step vertical delimiter
         painter->setPen(QPen(Qt::white, 1));
-        painter->drawLine(xpos, 1, xpos, TRACK_HEIGHT - 5);
+        painter->drawLine(xpos, 1, xpos, getHeight() - 5);
 
         // draw fade out line
         if (stepFadeOut > 0)
@@ -116,7 +116,7 @@ void SequenceItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
             if (fadeXpos - xpos > 5)
             {
                 painter->setPen(QPen(Qt::gray, 1));
-                painter->drawLine(xpos, 1, fadeXpos, TRACK_HEIGHT - 4);
+                painter->drawLine(xpos, 1, fadeXpos, getHeight() - 4);
             }
         }
         stepIdx++;

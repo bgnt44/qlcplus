@@ -123,6 +123,7 @@ public:
      * @param w the item width in pixels
      */
     virtual void setWidth(int w);
+    virtual void setHeight(int h);
 
     /**
      * @brief getWidth get the current item's width
@@ -130,6 +131,7 @@ public:
      * @return the item's width in pixels
      */
     virtual int getWidth();
+    virtual int getHeight();
 
     /**
      * @brief getDraggingPos returns the item position during a dragging event
@@ -289,6 +291,8 @@ protected:
 
     /** Width of the item in pixels */
     int m_width;
+    /** Height of the item in pixels */
+    int m_height;
 
     /** Position of the item top-left corner. This is used to handle unwanted dragging */
     QPointF m_pos;

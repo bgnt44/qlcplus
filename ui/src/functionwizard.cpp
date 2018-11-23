@@ -318,15 +318,15 @@ void FunctionWizard::updateAvailableFunctionsTree()
                                   PaletteGenerator::typetoString(PaletteGenerator::Animation),
                                   PaletteGenerator::Animation);
             }
-            else if (cap == QLCChannel::groupToString(QLCChannel::Gobo))
+            else if (cap.contains(QLCChannel::groupToString(QLCChannel::Gobo)))
                 addFunctionsGroup(fxGrpItem, grpItem,
                                   PaletteGenerator::typetoString(PaletteGenerator::Gobos),
                                   PaletteGenerator::Gobos);
-            else if (cap == QLCChannel::groupToString(QLCChannel::Shutter))
+            else if (cap.contains(QLCChannel::groupToString(QLCChannel::Shutter)))
                 addFunctionsGroup(fxGrpItem, grpItem,
                                   PaletteGenerator::typetoString(PaletteGenerator::Shutter),
                                   PaletteGenerator::Shutter);
-            else if (cap == QLCChannel::groupToString(QLCChannel::Colour))
+            else if (cap.contains(QLCChannel::groupToString(QLCChannel::Colour)))
                 addFunctionsGroup(fxGrpItem, grpItem,
                                   PaletteGenerator::typetoString(PaletteGenerator::ColourMacro),
                                   PaletteGenerator::ColourMacro);
@@ -404,6 +404,17 @@ void FunctionWizard::updateResultFunctionsTree()
                     item->setText(KFunctionName, scene->name());
                     item->setIcon(KFunctionName, scene->getIcon());
                 }
+                QHashIterator <QString,QList<Scene *>> pal(palette->multiscenes());
+                while(pal.hasNext())
+                {
+                    pal.next();
+                    foreach(Scene *scene, pal.value())
+                    {
+                        QTreeWidgetItem *item = new QTreeWidgetItem(getFunctionGroupItem(scene));
+                        item->setText(KFunctionName, scene->name());
+                        item->setIcon(KFunctionName, scene->getIcon());
+                    }
+                }
                 foreach(Chaser *chaser, palette->chasers())
                 {
                     QTreeWidgetItem *item = new QTreeWidgetItem(getFunctionGroupItem(chaser));
@@ -459,6 +470,37 @@ void FunctionWizard::updateWidgetsTree()
         frame->setData(KWidgetName, Qt::UserRole + 1, qVariantFromValue((void *)palette));
         frame->setFlags(frame->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsTristate);
         frame->setCheckState(KWidgetName, Qt::Unchecked);
+
+        QHashIterator <QString,QList<Scene *>> pal(palette->multiscenes());
+        while(pal.hasNext())
+        {
+            pal.next();
+
+            QTreeWidgetItem *soloFrameItem = NULL;
+
+            soloFrameItem = new QTreeWidgetItem(frame);
+            soloFrameItem->setText(KWidgetName, pal.key());
+            soloFrameItem->setIcon(KWidgetName, VCWidget::typeToIcon(VCWidget::SoloFrameWidget));
+            soloFrameItem->setFlags(soloFrameItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsTristate);
+            soloFrameItem->setCheckState(KWidgetName, Qt::Unchecked);
+            soloFrameItem->setData(KWidgetName, Qt::UserRole, VCWidget::SoloFrameWidget);
+
+            foreach(Scene *scene, pal.value())
+            {
+                QTreeWidgetItem *item = NULL;
+                if (soloFrameItem != NULL)
+                    item = new QTreeWidgetItem(soloFrameItem);
+                else
+                    item = new QTreeWidgetItem(frame);
+                QString toRemove = " - " + palette->model();
+                item->setText(KWidgetName, scene->name().remove(toRemove));
+                item->setIcon(KWidgetName, VCWidget::typeToIcon(VCWidget::ButtonWidget));
+                item->setCheckState(KWidgetName, Qt::Unchecked);
+                item->setData(KWidgetName, Qt::UserRole, VCWidget::ButtonWidget);
+                item->setData(KWidgetName, Qt::UserRole + 1, qVariantFromValue((void *)scene));
+
+            }
+        }
 
         QTreeWidgetItem *soloFrameItem = NULL;
         if (palette->scenes().count() > 0)

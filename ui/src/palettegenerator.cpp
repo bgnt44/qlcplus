@@ -128,6 +128,7 @@ QStringList PaletteGenerator::getCapabilities(const Fixture *fixture)
             case QLCChannel::Colour:
             case QLCChannel::Gobo:
             case QLCChannel::Shutter:
+            case QLCChannel::Prism:
             {
                 if (channel->capabilities().size() > 1)
                 {
@@ -179,6 +180,12 @@ QStringList PaletteGenerator::getCapabilities(const Fixture *fixture)
     return caps;
 }
 
+QHash<QString,QList<Scene *>> PaletteGenerator::multiscenes()
+{
+    return m_multiscenes;
+}
+
+
 QList<Scene *> PaletteGenerator::scenes()
 {
     return m_scenes;
@@ -198,6 +205,44 @@ void PaletteGenerator::addToDoc()
 {
     foreach(Scene *scene, m_scenes)
         m_doc->addFunction(scene);
+
+    //MultiScene Too
+    Chaser *mgchaser = new Chaser(m_doc);
+    mgchaser->setFadeInMode(Chaser::Common);
+    mgchaser->setFadeInSpeed(3000);
+    mgchaser->setFadeOutMode(Chaser::Common);
+    mgchaser->setFadeOutSpeed(0);
+    mgchaser->setDurationMode(Chaser::Common);
+    mgchaser->setDuration(1000);
+    mgchaser->setPath("palette/"+ m_model);
+    mgchaser->setName(tr("%1 mega chaser").arg( m_model));
+
+    QHashIterator <QString,QList<Scene *>> pal(multiscenes());
+    while(pal.hasNext())
+    {
+        pal.next();
+
+        Chaser *chaser = new Chaser(m_doc);
+        chaser->setFadeInMode(Chaser::Common);
+        chaser->setFadeInSpeed(3000);
+        chaser->setFadeOutMode(Chaser::Common);
+        chaser->setFadeOutSpeed(0);
+        chaser->setDurationMode(Chaser::Common);
+        chaser->setDuration(1000);
+        chaser->setPath("palette/"+ m_model);
+        chaser->setName(tr("%1 chaser").arg(pal.key()));
+        foreach(Scene *scene, pal.value())
+        {
+            m_doc->addFunction(scene);
+            chaser->addStep(ChaserStep(scene->id()));
+            chaser->setDuration(chaser->duration()+1000);
+
+            mgchaser->addStep(ChaserStep(scene->id()));
+            mgchaser->setDuration(mgchaser->duration()+1000);
+        }
+        m_doc->addFunction(chaser);
+    }
+    m_doc->addFunction(mgchaser);
 
     foreach(Chaser *chaser, m_chasers)
     {
@@ -369,6 +414,78 @@ void PaletteGenerator::createRGBCMYScene(QList<SceneValue> rcMap,
     }
 }
 
+void PaletteGenerator::createCapabilityScene(QHash<quint32, QList<quint32>> chMap,
+                                             PaletteGenerator::PaletteSubType subType)
+{
+    if (chMap.size() == 0)
+        return;
+
+    Fixture *fxi = m_fixtures.at(0);
+    Q_ASSERT(fxi != NULL);
+    QHashIterator <quint32, QList<quint32>> it(chMap);
+    QStringList tmpCapList;
+
+    QList<quint32> lstCh = it.next().value();
+    QHash<QString,Scene*> scenesTemp;
+    for(int chNum = 0; chNum < lstCh.count(); chNum++)
+    {
+        const QLCChannel* channel = fxi->channel(lstCh[chNum]);
+
+        for (int cIdx = 0; cIdx < channel->capabilities().count(); cIdx++)
+        {
+
+            Scene *scene = new Scene(m_doc);
+            Scene *evenScene = NULL;
+            Scene *oddScene = NULL;
+            bool even = false;
+            QLCCapability *cap = channel->capabilities().at(cIdx);
+
+            uchar value = cap->middle();
+            QString name = cap->name();
+
+            // Do not add the same capability twice
+            //if (tmpCapList.contains(name))
+             //   continue;
+
+            tmpCapList.append(name);
+
+            if (subType == OddEven)
+            {
+                evenScene = new Scene(m_doc);
+                oddScene = new Scene(m_doc);
+            }
+
+            QHashIterator <quint32, QList<quint32>> itBis(chMap);
+            while (itBis.hasNext() == true)
+            {
+                itBis.next();
+                scene->setValue(itBis.key(), itBis.value()[chNum], value);
+                if (subType == OddEven)
+                {
+                    if (even)
+                        evenScene->setValue(itBis.key(), itBis.value()[chNum], value);
+                    else
+                        oddScene->setValue(itBis.key(), itBis.value()[chNum], value);
+                    even = !even;
+                }
+            }
+
+            scene->setName(name + " - " + m_model);
+            scene->setPath(m_model+"/"+channel->name());
+            m_multiscenes[channel->name()].append(scene);
+            if (subType == OddEven)
+            {
+                evenScene->setName(name + " - " + m_model + tr(" - Even"));
+                oddScene->setName(name + " - " + m_model + tr(" - Odd"));
+                evenScene->setPath(m_model+"/"+channel->name()+"/even");
+                oddScene->setPath(m_model+"/"+channel->name()+"/odd");
+                m_multiscenes[channel->name()].append(evenScene);
+                m_multiscenes[channel->name()].append(oddScene);
+            }
+        }
+    }
+}
+
 void PaletteGenerator::createCapabilityScene(QHash<quint32, quint32> chMap,
                                              PaletteGenerator::PaletteSubType subType)
 {
@@ -489,7 +606,7 @@ void PaletteGenerator::createFunctions(PaletteGenerator::PaletteType type,
     QList<SceneValue> m_magentaList;
     QList<SceneValue> m_yellowList;
     QList<SceneValue> m_whiteList;
-    QHash<quint32, quint32> m_goboList;
+    QHash<quint32,  QList<quint32>> m_goboList;
     QHash<quint32, quint32> m_shutterList;
     QHash<quint32, quint32> m_colorMacroList;
 
@@ -508,7 +625,7 @@ void PaletteGenerator::createFunctions(PaletteGenerator::PaletteType type,
             {
                 case QLCChannel::Pan: m_panList[fxID] = ch; break;
                 case QLCChannel::Tilt: m_tiltList[fxID] = ch; break;
-                case QLCChannel::Gobo: m_goboList[fxID] = ch; break;
+                case QLCChannel::Gobo: m_goboList[fxID].append(ch); break;
                 case QLCChannel::Shutter: m_shutterList[fxID] = ch; break;
                 case QLCChannel::Colour: m_colorMacroList[fxID] = ch; break;
                 case QLCChannel::Intensity:

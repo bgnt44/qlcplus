@@ -123,6 +123,16 @@ private:
     bool m_isMute;
 
     /*********************************************************************
+     * Channels Groups Data
+     *********************************************************************/
+public:
+    void BindChannelGroups(QStringList chGrp);
+    QStringList GetChannelGroups();
+
+private:
+    /** Flag to mute/unmute this track */
+    QStringList m_channelsBound;
+    /*********************************************************************
      * Functions
      *********************************************************************/
 public:

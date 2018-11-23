@@ -235,6 +235,36 @@ void MultiTrackView::addSequence(Chaser *chaser, Track *track, ShowFunction *sf)
 
     SequenceItem *item = new SequenceItem(chaser, func);
     setItemCommonProperties(item, func, trackNum);
+    BuildTrackDisplay();
+}
+
+void MultiTrackView::BuildTrackDisplay()
+{
+
+    foreach(ShowItem* item, m_items)
+    {
+        int position_index=0;
+        int position_count=1;
+        ShowFunction* sf = item->showFunction();
+        TrackItem* track = m_tracks[item->getTrackIndex()];
+        foreach(ShowFunction* osf, track->getTrack()->showFunctions())
+        {
+            if(sf != osf && sf != NULL){
+                bool startDuring = (sf->startTime() > osf->startTime()) && (sf->startTime() < osf->startTime() + osf->duration());
+                bool endDuring = (sf->startTime() + sf->duration() > osf->startTime()) && (sf->startTime()+sf->duration() < osf->startTime() + osf->duration());
+                if(startDuring)
+                {
+                    position_index++;
+                    position_count++;
+                }else if (endDuring)
+                {
+                    position_count++;
+                }
+            }
+        }
+        item->setPos(item->pos().x(),HEADER_HEIGHT + track->getTrackNumber() * TRACK_HEIGHT + position_index * TRACK_HEIGHT/position_count);
+        item->setHeight(TRACK_HEIGHT/position_count);
+    }
 }
 
 void MultiTrackView::addAudio(Audio *audio, Track *track, ShowFunction *sf)
@@ -379,6 +409,7 @@ void MultiTrackView::deleteShowItem(Track *track, ShowFunction *sf)
     }
 
     track->removeShowFunction(sf);
+    BuildTrackDisplay();
 }
 
 void MultiTrackView::moveCursor(quint32 timePos)
@@ -599,6 +630,7 @@ void MultiTrackView::slotItemMoved(QGraphicsSceneMouseEvent *event, ShowItem *it
     item->setStartTime(s_time);
 
     m_scene->update();
+    BuildTrackDisplay();
     emit showItemMoved(item, getTimeFromPosition(item->x() + event->pos().toPoint().x()), moved);
 }
 

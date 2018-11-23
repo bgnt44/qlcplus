@@ -106,6 +106,7 @@ private:
     int getTrackIndex(Track *trk);
 
     void setItemCommonProperties(ShowItem *item, ShowFunction *func, int trackNum);
+    void BuildTrackDisplay();
 
     /*********************************************************************
      * Header
