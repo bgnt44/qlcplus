@@ -7,7 +7,7 @@ SUBDIRS        += engine
 
 qmlui: {
   message("Building QLC+ 5 QML UI")
-  SUBDIRS      += qmlui
+  #SUBDIRS      += qmlui
 } else {
   message("Building QLC+ 4 QtWidget UI")
   SUBDIRS      += ui

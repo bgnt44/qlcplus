@@ -85,6 +85,9 @@ DmxDumpFactory::DmxDumpFactory(Doc *doc, DmxDumpFactoryProperties *props, QWidge
 
     connect(m_sceneButton, SIGNAL(clicked(bool)),
             this, SLOT(slotSelectSceneButtonClicked()));
+
+    connect(m_sceneButton_2, SIGNAL(clicked(bool)),
+            this, SLOT(slotSelectSceneSourceButtonClicked()));
 }
 
 DmxDumpFactory::~DmxDumpFactory()
@@ -151,6 +154,23 @@ void DmxDumpFactory::slotSelectSceneButtonClicked()
     }
 }
 
+void DmxDumpFactory::slotSelectSceneSourceButtonClicked()
+{
+    FunctionSelection fs(this, m_doc);
+    fs.setMultiSelection(false);
+    fs.setFilter(Function::SceneType, true);
+
+    if (fs.exec() == QDialog::Accepted && fs.selection().size() > 0)
+    {
+        m_sourceSceneID = fs.selection().first();
+        Scene *scene = qobject_cast<Scene*>(m_doc->function(m_sourceSceneID));
+        if (scene == NULL)
+            return;
+
+        m_sceneName_2->setText(scene->name());
+    }
+}
+
 QList<VCWidget *> DmxDumpFactory::getChildren(VCWidget *obj, int type)
 {
     QList<VCWidget *> list;
@@ -202,6 +222,7 @@ void DmxDumpFactory::slotDumpNonZeroChanged(bool active)
 
 void DmxDumpFactory::accept()
 {
+
     QByteArray dumpMask = m_properties->channelsMask();
     QList<Universe*> ua = m_doc->inputOutputMap()->claimUniverses();
 
@@ -224,9 +245,13 @@ void DmxDumpFactory::accept()
 
     m_doc->inputOutputMap()->releaseUniverses(false);
 
-    Scene *newScene = NULL;
+    Scene *newScene = nullptr;
     if (m_selectedSceneID != Function::invalidId())
         newScene = qobject_cast<Scene*>(m_doc->function(m_selectedSceneID));
+
+    Scene *sceneSource = nullptr;
+    if (m_sourceSceneID != Function::invalidId() && m_sceneName_2->text().length() > 0 )
+        sceneSource = qobject_cast<Scene*>(m_doc->function(m_sourceSceneID));
 
     for (int t = 0; t < m_fixturesTree->topLevelItemCount(); t++)
     {
@@ -256,6 +281,7 @@ void DmxDumpFactory::accept()
                            (m_nonZeroCheck->isChecked() == true && value > 0))
                         {
                             SceneValue sv = SceneValue(fxID, channel, value);
+                            if(sceneSource == nullptr || sceneSource->value(fxID,channel) != value)
                             newScene->setValue(sv);
                         }
                     }
@@ -270,6 +296,8 @@ void DmxDumpFactory::accept()
                                (m_nonZeroCheck->isChecked() == true && value > 0))
                             {
                                 SceneValue sv = SceneValue(fxID, channel, value);
+                                if(sceneSource == nullptr || sceneSource->value(fxID,channel) != value)
+
                                 newScene->setValue(sv);
                             }
                         }
@@ -285,6 +313,7 @@ void DmxDumpFactory::accept()
     {
         bool addedToDoc = false;
 
+
         if (m_selectedSceneID != Function::invalidId() &&
             m_doc->function(m_selectedSceneID) != NULL)
         {
@@ -293,6 +322,11 @@ void DmxDumpFactory::accept()
         else
         {
             newScene->setName(m_sceneName->text());
+            if(sceneSource != nullptr)
+            {
+               // newScene->setName(newScene->name() + "_dlt:" + sceneSource->name().right(3));
+                newScene->setPath("Delta/"+sceneSource->name());
+            }
             addedToDoc = m_doc->addFunction(newScene);
         }
         if (addedToDoc == true)

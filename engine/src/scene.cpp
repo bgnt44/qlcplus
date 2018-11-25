@@ -73,12 +73,12 @@ Function* Scene::createCopy(Doc* doc, bool addToDoc)
     if (copy->copyFrom(this) == false)
     {
         delete copy;
-        copy = NULL;
+        copy = nullptr;
     }
     if (addToDoc == true && doc->addFunction(copy) == false)
     {
         delete copy;
-        copy = NULL;
+        copy = nullptr;
     }
 
     return copy;
@@ -222,11 +222,11 @@ QColor Scene::colorValue(quint32 fxi)
             continue;
 
         Fixture *fixture = doc()->fixture(scv.fxi);
-        if (fixture == NULL)
+        if (fixture == nullptr)
             continue;
 
         const QLCChannel* channel = fixture->channel(scv.channel);
-        if (channel == NULL)
+        if (channel == nullptr)
             continue;
 
         if (channel->group() == QLCChannel::Intensity)
@@ -648,15 +648,15 @@ void Scene::write(MasterTimer *timer, QList<Universe*> ua)
             SceneValue scv(it.next().key());
             Fixture *fixture = doc()->fixture(scv.fxi);
 
-            if (fixture == NULL)
+            if (fixture == nullptr)
                 continue;
 
             quint32 universe = fixture->universe();
             if (universe == Universe::invalid())
                 continue;
 
-            GenericFader *fader = m_fadersMap.value(universe, NULL);
-            if (fader == NULL)
+            GenericFader *fader = m_fadersMap.value(universe, nullptr);
+            if (fader == nullptr)
             {
                 fader = ua[universe]->requestFader();
                 fader->adjustIntensity(getAttributeValue(Intensity));

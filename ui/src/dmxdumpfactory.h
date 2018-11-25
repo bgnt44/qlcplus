@@ -47,6 +47,7 @@ protected slots:
     void slotUpdateButtons();
     void slotUpdateSliders();
     void slotSelectSceneButtonClicked();
+    void slotSelectSceneSourceButtonClicked();
 
 protected:
     QList<VCWidget *> getChildren(VCWidget *obj, int type);
@@ -57,6 +58,7 @@ private:
     FixtureTreeWidget *m_fixturesTree;
     DmxDumpFactoryProperties* m_properties;
     quint32 m_selectedSceneID;
+    quint32 m_sourceSceneID;
 
 protected slots:
     void slotDumpModeChanged(bool mode);

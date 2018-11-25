@@ -4,7 +4,7 @@ TEMPLATE = subdirs
 
  #SUBDIRS              += dmxusb
  #SUBDIRS              += peperoni
- SUBDIRS              += udmx
+ #SUBDIRS              += udmx
  SUBDIRS              += midi
  unix {
    system(pkg-config --exists libola) {

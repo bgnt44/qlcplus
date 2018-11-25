@@ -5,4 +5,3 @@ TEMPLATE = subdirs
 unix:!macx: SUBDIRS += linux
 macx:       SUBDIRS += macos
 win32:      SUBDIRS += windows
-
