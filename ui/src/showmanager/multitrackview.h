@@ -98,15 +98,15 @@ public:
     /** get the selected Show item. If none, returns NULL */
     ShowItem *getSelectedItem();
 
+
 private:
     /** Retrieve the index of the given Track.
      *  If trk is NULL, this function returns the currently
      *  selected track.
      */
     int getTrackIndex(Track *trk);
-
+    int getTrackHeight(int trackNum);
     void setItemCommonProperties(ShowItem *item, ShowFunction *func, int trackNum);
-    void BuildTrackDisplay();
 
     /*********************************************************************
      * Header
@@ -123,6 +123,7 @@ public:
     void setBPMValue(int value);
 
     void setSnapToGrid(bool enable);
+    void BuildTrackDisplay();
 
     /*********************************************************************
      * Cursor
@@ -142,6 +143,9 @@ public:
 
     /** Return the time (in msec) from a given X position */
     quint32 getTimeFromPosition(qreal pos);
+
+    ShowItem* GetItem(ShowFunction* function);
+    void OrganizeTrack(TrackItem* track);
 
 private:
     QGraphicsScene *m_scene;
@@ -165,7 +169,7 @@ protected slots:
     void slotTrackSoloFlagChanged(TrackItem*, bool);
     void slotTrackMuteFlagChanged(TrackItem*, bool);
     void slotViewScrolled(int);
-
+    void slotItemSizedChanged(QGraphicsSceneMouseEvent *event, ShowItem *item);
     void slotItemMoved(QGraphicsSceneMouseEvent *event, ShowItem *item);
     void slotAlignToCursor(ShowItem *item);
 

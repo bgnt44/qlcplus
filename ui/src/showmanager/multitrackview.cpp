@@ -93,20 +93,23 @@ void MultiTrackView::updateTracksDividers()
     if (m_vdivider != NULL)
         m_scene->removeItem(m_vdivider);
 
-    int ypos = 35 + TRACK_HEIGHT;
-    int hDivNum = 6;
-    if (m_tracks.count() > 5)
-        hDivNum = m_tracks.count();
+    int ypos = 35;
+    int hDivNum = m_tracks.count();
+    int currentHeight = 0;
+
+
     for (int j = 0; j < hDivNum; j++)
     {
-        QGraphicsItem *item = m_scene->addRect(0, ypos + (j * TRACK_HEIGHT),
+        m_tracks[j]->setPos(0, HEADER_HEIGHT + (currentHeight));
+        currentHeight = currentHeight + m_tracks[j]->height();
+        QGraphicsItem *item = m_scene->addRect(0, ypos + (currentHeight),
                                                m_scene->width(), 1,
                                                QPen( QColor(150, 150, 150, 255) ),
                                                QBrush( QColor(190, 190, 190, 255) ) );
         item->setZValue(-1);
         m_hdividers.append(item);
     }
-    m_vdivider = m_scene->addRect(TRACK_WIDTH - 3, 0, 3, m_scene->height(),
+        m_vdivider = m_scene->addRect(TRACK_WIDTH - 3, 0, 3, m_scene->height(),
                         QPen( QColor(150, 150, 150, 255) ),
                         QBrush( QColor(190, 190, 190, 255) ) );
 }
@@ -135,9 +138,9 @@ void MultiTrackView::updateViewSize()
             gWidth = item->x() + item->getWidth();
     }
 
-    if ((m_tracks.count() * TRACK_HEIGHT) + HEADER_HEIGHT > VIEW_DEFAULT_HEIGHT)
+    if ((getTrackHeight(m_tracks.count())) + HEADER_HEIGHT > VIEW_DEFAULT_HEIGHT)
     {
-        gHeight = (m_tracks.count() * TRACK_HEIGHT) + HEADER_HEIGHT;
+        gHeight = getTrackHeight(m_tracks.count()) + HEADER_HEIGHT;
         m_cursor->setHeight(gHeight);
     }
 
@@ -172,7 +175,9 @@ void MultiTrackView::addTrack(Track *track)
 
     TrackItem *trackItem = new TrackItem(track, m_tracks.count());
     trackItem->setName(track->name());
-    trackItem->setPos(0, HEADER_HEIGHT + (TRACK_HEIGHT * m_tracks.count()));
+    int currentTrackHeight = getTrackHeight(-1);
+
+    trackItem->setPos(0, HEADER_HEIGHT + (currentTrackHeight));
     m_scene->addItem(trackItem);
     m_tracks.append(trackItem);
     activateTrack(track);
@@ -195,23 +200,30 @@ void MultiTrackView::setItemCommonProperties(ShowItem *item, ShowFunction *func,
     qDebug() << "Start time:" << func->startTime() << "Duration:" << func->duration();
 
     item->setTrackIndex(trackNum);
-
+    //TrackItem* track = m_tracks[trackNum];
     int timeScale = m_timeSlider->value();
+
+    int currentTrackHeight = getTrackHeight(trackNum);
 
     if (func->startTime() == UINT_MAX)
     {
         item->setStartTime(getTimeFromCursor());
-        item->setPos(m_cursor->x() + 2, 36 + (trackNum * TRACK_HEIGHT));
+        item->setPos(m_cursor->x() + 2, 36 + (currentTrackHeight));
     }
     else
-        item->setPos(getPositionFromTime(func->startTime()) + 2, 36 + (trackNum * TRACK_HEIGHT));
+        item->setPos(getPositionFromTime(func->startTime()) + 2, 36 + (currentTrackHeight));
 
     item->setTimeScale(timeScale);
 
     connect(item, SIGNAL(itemDropped(QGraphicsSceneMouseEvent *, ShowItem *)),
             this, SLOT(slotItemMoved(QGraphicsSceneMouseEvent *, ShowItem *)));
+
+    connect(item, SIGNAL(itemSized(QGraphicsSceneMouseEvent*,ShowItem*)),
+            this, SLOT(slotItemSizedChanged(QGraphicsSceneMouseEvent *, ShowItem *)));
+
     connect(item, SIGNAL(alignToCursor(ShowItem*)),
             this, SLOT(slotAlignToCursor(ShowItem*)));
+
     m_scene->addItem(item);
     m_items.append(item);
     int new_scene_width = item->x() + item->getWidth();
@@ -235,36 +247,143 @@ void MultiTrackView::addSequence(Chaser *chaser, Track *track, ShowFunction *sf)
 
     SequenceItem *item = new SequenceItem(chaser, func);
     setItemCommonProperties(item, func, trackNum);
-    BuildTrackDisplay();
+    //BuildTrackDisplay();
 }
 
-void MultiTrackView::BuildTrackDisplay()
+int MultiTrackView::getTrackHeight(int trackNum)
 {
+    int currentTrackHeight = 0;
+    foreach(TrackItem* ti, m_tracks)
+    {
+        if(trackNum == -1 || ti->getTrackNumber() < trackNum)
+        {
+            currentTrackHeight += ti->height();
+        }
+    }
+    return currentTrackHeight;
+}
 
+ShowItem* MultiTrackView::GetItem(ShowFunction* function)
+{
+    ShowItem*  currentItem;
     foreach(ShowItem* item, m_items)
     {
-        int position_index=0;
-        int position_count=1;
-        ShowFunction* sf = item->showFunction();
-        TrackItem* track = m_tracks[item->getTrackIndex()];
-        foreach(ShowFunction* osf, track->getTrack()->showFunctions())
+        if(item->showFunction() == function)
+            currentItem = item;
+    }
+    return currentItem;
+}
+
+bool interfere(ShowFunction * candidat,ShowFunction * courant)
+{
+    return (candidat->startTime() >= courant->startTime()) && (candidat->startTime() <= courant->startTime() + courant->duration());
+}
+
+QList<ShowFunction *> functionRelated(ShowFunction* source,TrackItem* track)
+{
+    QList<ShowFunction *> liste;
+    foreach(ShowFunction* osf, track->getTrack()->showFunctions())
+    {
+        // on recherche les items qui sont conflictuel avec l item courant
+        if(source != osf && source != NULL)
         {
-            if(sf != osf && sf != NULL){
-                bool startDuring = (sf->startTime() > osf->startTime()) && (sf->startTime() < osf->startTime() + osf->duration());
-                bool endDuring = (sf->startTime() + sf->duration() > osf->startTime()) && (sf->startTime()+sf->duration() < osf->startTime() + osf->duration());
-                if(startDuring)
-                {
-                    position_index++;
-                    position_count++;
-                }else if (endDuring)
-                {
-                    position_count++;
-                }
+            if(interfere(source,osf))
+            {
+                liste.append(osf);
             }
         }
-        item->setPos(item->pos().x(),HEADER_HEIGHT + track->getTrackNumber() * TRACK_HEIGHT + position_index * TRACK_HEIGHT/position_count);
-        item->setHeight(TRACK_HEIGHT/position_count);
     }
+    return liste;
+}
+
+int GetPositionItem(ShowFunction * candidat,ShowFunction * courant,TrackItem* track,int index,QString level)
+{
+    level += "--- ";
+
+    QList<ShowFunction *> items = functionRelated(courant,track);
+    if(items.count()== 0)
+    {
+         qDebug()  << level << "no child ";
+    }
+    // on recherche les items qui sont conflictuel avec l item courant
+    foreach(ShowFunction* fctConflit, items)
+    {
+        int valeurTrouve = index;
+        if(interfere(candidat,fctConflit))
+        {
+            qDebug() << level << "[+1]interfere "<<  fctConflit->functionID();
+            valeurTrouve++;
+            valeurTrouve = GetPositionItem(candidat,fctConflit,track,valeurTrouve,level);
+            //si il pose probleme on cherche si son parent est conflictuel ou non;
+        }
+        else
+        {
+            qDebug() << level << "[=0] NON interfere" << fctConflit->functionID();
+
+           // espace disponible ici
+           //valeurTrouve = 0;
+           valeurTrouve = GetPositionItem(candidat,fctConflit,track,valeurTrouve,level);
+                      // on cherches les parents
+        }
+
+
+
+        qDebug()  << level << "vt " << valeurTrouve;
+
+
+        if(valeurTrouve < index || candidat == courant)
+        {index = valeurTrouve;}
+    }
+
+    if(index == 99)
+        index = 0;
+
+    return index;
+}
+
+void MultiTrackView::OrganizeTrack(TrackItem* track)
+{
+    int previousTracksHeight = getTrackHeight(track->getTrackNumber());
+
+    int max_count = 1;
+
+    quint32 limit [99] = {0};
+
+    foreach(ShowFunction* sf, track->getTrack()->showFunctionsSorted())
+    {
+        int i = 0;
+        while(limit[i] > sf->startTime())
+        {
+            i++;
+        }
+        limit[i] = (sf->startTime() + sf->duration());
+        //qDebug() << "TRAITEMENT " <<  sf->functionID();s
+        //last_index = GetPositionItem(sf,sf,track,0,"");
+        ShowItem* item = GetItem(sf);
+        item->setPos(item->pos().x(),HEADER_HEIGHT + previousTracksHeight + i * TRACK_HEIGHT);
+        item->setHeight(TRACK_HEIGHT);
+
+        if(i + 1 > max_count)
+        {
+            max_count = i + 1;
+        }
+
+    }
+
+    track->setHeight(TRACK_HEIGHT * max_count);
+
+
+}
+void MultiTrackView::BuildTrackDisplay()
+{
+    foreach(TrackItem* tr, m_tracks)
+    {
+        tr->setHeight(TRACK_HEIGHT);
+        OrganizeTrack(tr);
+    }
+
+    updateTracksDividers();
+    updateViewSize();
 }
 
 void MultiTrackView::addAudio(Audio *audio, Track *track, ShowFunction *sf)
@@ -593,6 +712,30 @@ void MultiTrackView::slotViewScrolled(int)
     //qDebug() << Q_FUNC_INFO << "Percentage: " << value;
 }
 
+void MultiTrackView::slotItemSizedChanged(QGraphicsSceneMouseEvent *event, ShowItem *item)
+{
+    qDebug() << Q_FUNC_INFO << "event - <" << event->pos().toPoint().x() << "> - <" << event->pos().toPoint().y() << ">";
+    // align to the appropriate track
+    bool moved = true;
+    quint32 s_time = 0;
+    if (m_snapToGrid == true)
+    {
+        float step = m_header->getTimeDivisionStep();
+        float gridPos = ((int)(item->x() / step) * step);
+        item->setWidth(gridPos + 2);
+        s_time = getTimeFromPosition(gridPos);
+    }
+    else
+    {
+        //item->setWidth(event->pos().toPoint().x() );
+        s_time = getTimeFromPosition(TRACK_WIDTH + item->getWidth());
+    }
+
+    item->setDuration(s_time, false);
+    m_scene->update();
+    BuildTrackDisplay();
+    emit showItemMoved(item, getTimeFromPosition(item->x() + event->pos().toPoint().x()), moved);
+}
 void MultiTrackView::slotItemMoved(QGraphicsSceneMouseEvent *event, ShowItem *item)
 {
     qDebug() << Q_FUNC_INFO << "event - <" << event->pos().toPoint().x() << "> - <" << event->pos().toPoint().y() << ">";

@@ -32,9 +32,12 @@ TrackItem::TrackItem(Track *track, int number)
     , m_isMute(false)
     , m_isSolo(false)
 {
+
+    m_height = TRACK_HEIGHT;
+
     m_font = qApp->font();
     m_font.setBold(true);
-    m_font.setPixelSize(12);
+    m_font.setPixelSize(10);
 
     m_btnFont = qApp->font();
     m_btnFont.setBold(true);
@@ -147,7 +150,7 @@ void TrackItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
 
 QRectF TrackItem::boundingRect() const
 {
-    return QRectF(0, 0, TRACK_WIDTH - 4, TRACK_HEIGHT);
+    return QRectF(0, 0, TRACK_WIDTH - 4, m_height-2);
 }
 
 void TrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -156,12 +159,12 @@ void TrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     Q_UNUSED(widget);
 
     // draw background gradient
-    QLinearGradient linearGrad(QPointF(0, 0), QPointF(0, TRACK_HEIGHT));
+    QLinearGradient linearGrad(QPointF(0, 0), QPointF(0, m_height));
     linearGrad.setColorAt(0, QColor(50, 64, 75, 255));
     //linearGrad.setColorAt(1, QColor(99, 127, 148, 255));
     linearGrad.setColorAt(1, QColor(76, 98, 115, 255));
     painter->setBrush(linearGrad);
-    painter->drawRect(0, 0, TRACK_WIDTH - 4, TRACK_HEIGHT - 1);
+    painter->drawRect(0, 0, TRACK_WIDTH - 4, m_height - 1);
 
     // Draw left bar that shows if the track is active or not
     painter->setPen(QPen(QColor(48, 61, 72, 255), 1));
@@ -192,13 +195,24 @@ void TrackItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     if (m_track->getSceneID() != Function::invalidId())
         painter->drawPixmap(TRACK_WIDTH - 33, 5, 24, 24, QIcon(":/scene.png").pixmap(24, 24));
 
+    if (m_track->GetChannelGroups().length() > 0)
+    {
+        int indent = 0;
+        foreach(QString s, m_track->GetChannelGroups())
+        {
+           QString icon = QLCChannel::getIconNameFromGroupSt(QLCChannel::stringToGroup(s));
+           painter->drawPixmap(15 + indent*20, 30, 18, 18, QIcon(icon).pixmap(18, 18));
+           indent++;
+        }
+    }
+
     painter->setFont(m_font);
     // draw shadow
     painter->setPen(QPen(QColor(10, 10, 10, 150), 2));
-    painter->drawText(QRect(5, 47, TRACK_WIDTH - 7, 28), Qt::AlignLeft | Qt::TextWordWrap | Qt::AlignBottom, m_name);
+    painter->drawText(QRect(5, 38, TRACK_WIDTH - 7, 28), Qt::AlignLeft | Qt::TextWordWrap | Qt::AlignTop, m_name);
     // draw track name
     painter->setPen(QPen(QColor(200, 200, 200, 255), 2));
-    painter->drawText(QRect(4, 47, TRACK_WIDTH - 7, 28), Qt::AlignLeft | Qt::TextWordWrap | Qt::AlignBottom, m_name);
+    painter->drawText(QRect(4, 38, TRACK_WIDTH - 7, 28), Qt::AlignLeft | Qt::TextWordWrap | Qt::AlignTop, m_name);
 }
 
 void TrackItem::slotTrackChanged(quint32 id)
@@ -228,3 +242,13 @@ void TrackItem::slotDeleteTrackClicked()
 {
     emit itemRequestDelete(m_track);
 }
+int  TrackItem::height()
+{
+    return m_height;
+}
+
+void  TrackItem::setHeight(int height)
+{
+    m_height = height;
+}
+

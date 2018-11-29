@@ -1905,7 +1905,10 @@ void ShowManager::updateMultiTrackView()
     }
     if (m_doc->clipboard()->hasFunction())
         m_pasteAction->setEnabled(true);
-    m_showview->updateViewSize();
+
+    m_showview->BuildTrackDisplay();
+       m_showview->updateViewSize();
+
 }
 
 bool ShowManager::checkOverlapping(quint32 startTime, quint32 duration)

@@ -27,6 +27,7 @@
 
 #include "showitem.h"
 #include "chaser.h"
+#include "qlccapability.h"
 
 /** @addtogroup ui_functions
  * @{

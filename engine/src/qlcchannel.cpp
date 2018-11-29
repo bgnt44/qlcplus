@@ -810,6 +810,31 @@ QString QLCChannel::getIconNameFromGroup(QLCChannel::Group grp, bool svg) const
     return QString("%1:/intensity.%2").arg(prefix).arg(ext);
 }
 
+QString QLCChannel::getIconNameFromGroupSt(QLCChannel::Group grp, bool svg)
+{
+    QString prefix = svg ? "qrc" : "";
+    QString ext = svg ? "svg" : "png";
+
+    switch(grp)
+    {
+        case Pan: return QString("%1:/pan.%2").arg(prefix).arg(ext); break;
+        case Tilt: return QString("%1:/tilt.%2").arg(prefix).arg(ext); break;
+        case Colour: return QString("%1:/colorwheel.%2").arg(prefix).arg(ext); break;
+        case Effect: return QString("%1:/star.%2").arg(prefix).arg(ext); break;
+        case Gobo: return QString("%1:/gobo.%2").arg(prefix).arg(ext); break;
+        case Shutter: return QString("%1:/shutter.%2").arg(prefix).arg(ext); break;
+        case Speed: return QString("%1:/speed.%2").arg(prefix).arg(ext); break;
+        case Prism: return QString("%1:/prism.%2").arg(prefix).arg(ext); break;
+        case Maintenance: return QString("%1:/configure.%2").arg(prefix).arg(ext); break;
+        //case Intensity: return getIntensityColorCode(svg); break;
+        case Beam: return QString("%1:/beam.%2").arg(prefix).arg(ext); break;
+        case Nothing: return QString("%1:/uncheck.%2").arg(prefix).arg(ext); break;
+        default:
+        break;
+    }
+
+    return QString("%1:/intensity.%2").arg(prefix).arg(ext);
+}
 /*****************************************************************************
  * Properties
  *****************************************************************************/

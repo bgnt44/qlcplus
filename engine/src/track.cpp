@@ -154,6 +154,17 @@ QList <ShowFunction *> Track::showFunctions() const
     return m_functions;
 }
 
+bool showFunctionbefore(ShowFunction* v1, ShowFunction *v2)
+{
+    return (v1->startTime() < v2->startTime());
+}
+
+QList <ShowFunction *> Track::showFunctionsSorted()
+{
+    std::sort(m_functions.begin(),m_functions.end(),showFunctionbefore);
+    return m_functions;
+}
+
 void Track::BindChannelGroups(QStringList chGrp){
     m_channelsBound.clear();
     m_channelsBound.append(chGrp);

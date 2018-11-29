@@ -249,6 +249,7 @@ signals:
      * @brief itemDropped signal emitted when the user drops and item after dragging it
      */
     void itemDropped(QGraphicsSceneMouseEvent *, ShowItem *);
+    void itemSized(QGraphicsSceneMouseEvent *, ShowItem *);
 
     /**
      * @brief alignToCursor signal emitted to request the item alignment to the
@@ -276,6 +277,8 @@ protected:
      */
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+
 protected:
     /** Font used for the item's labels */
     QFont m_font;
@@ -293,10 +296,11 @@ protected:
     int m_width;
     /** Height of the item in pixels */
     int m_height;
-
+    QRectF contour;
     /** Position of the item top-left corner. This is used to handle unwanted dragging */
     QPointF m_pos;
-
+    QRectF* m_soloRegion;
+    bool m_isSolo;
     /** Horizontal scale to adapt width to the current time line */
     int m_timeScale;
 

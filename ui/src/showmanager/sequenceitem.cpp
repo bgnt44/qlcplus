@@ -70,9 +70,11 @@ void SequenceItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
 
     if (this->isSelected() == false)
         m_selectedStep = -1;
-
+    float indent = 0;
+    float indentSt = 0;
     foreach (ChaserStep step, m_chaser->steps())
     {
+
         uint stepFadeIn = step.fadeIn;
         uint stepFadeOut = step.fadeOut;
         uint stepDuration = step.duration;
@@ -83,6 +85,51 @@ void SequenceItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
         if (m_chaser->durationMode() == Chaser::Common)
             stepDuration = m_chaser->duration();
 
+
+        foreach(SceneValue val, step.values)
+        {
+
+            QList<QLCCapability*> caps = m_chaser->doc()->fixture(val.fxi)->channel(val.channel)->capabilities();
+            foreach (QLCCapability* cap, caps) {
+                if(val.value > cap->min() && val.value < cap->max())
+                {
+                    if (cap->presetType() == QLCCapability::Picture)
+                    {
+                        QString icon = cap->resource(0).toString();
+                        painter->drawPixmap(5 + indent, 5, 20, 20, QIcon(icon).pixmap(20, 20));
+                        indent = indent + 22;
+
+                    }
+                    else if (cap->presetType() == QLCCapability::SingleColor)
+                    {
+                       QColor col1 = cap->resource(0).value<QColor>();
+                       painter->setPen(Qt::white);
+                       painter->setBrush(QBrush(col1));
+                       painter->drawRect(5 + indent, 5, 20, 20);
+                       indent = indent + 22;
+
+                    } else
+                    {
+                       QFont fontOld = painter->font() ;
+                       QFont font;
+                       font.setPixelSize(7);
+                       painter->setBrush(QBrush(Qt::white));
+                       painter->setPen(Qt::white);
+                       painter->setFont(font);
+                       painter->drawRect(5 + indent, 5, 20, 20);
+                       painter->setPen(Qt::black);
+
+                       painter->drawText(6 + indent,6,19,19, Qt::AlignLeft | Qt::TextWordWrap | Qt::AlignTop,cap->name());
+                       indent = indent + 22;
+                       painter->setFont(fontOld);
+
+                    }
+
+                }
+            }
+
+           caps.length();
+        }
         // draw fade in line
         if (stepFadeIn > 0)
         {
@@ -95,6 +142,8 @@ void SequenceItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opti
             }
         }
         float stepWidth = ((timeScale * (float)stepDuration) / 1000);
+        indentSt = indentSt + stepWidth;
+        indent = indentSt;
         // draw selected step
         if (stepIdx == m_selectedStep)
         {

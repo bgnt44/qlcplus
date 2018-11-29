@@ -150,7 +150,7 @@ public:
     bool addShowFunction(ShowFunction *func);
 
     QList <ShowFunction *> showFunctions() const;
-
+    QList <ShowFunction *> showFunctionsSorted();
 private:
     /** List of Function IDs present in this track */
     QList <ShowFunction *> m_functions;
