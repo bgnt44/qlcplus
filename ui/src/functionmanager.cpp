@@ -44,6 +44,7 @@
 #include "functionmanager.h"
 #include "rgbmatrixeditor.h"
 #include "functionwizard.h"
+#include "fixturecalibration.h"
 #include "chasereditor.h"
 #include "scripteditor.h"
 #include "sceneeditor.h"
@@ -97,6 +98,7 @@ FunctionManager::FunctionManager(QWidget* parent, Doc* doc)
     , m_addVideoAction(NULL)
     , m_autostartAction(NULL)
     , m_wizardAction(NULL)
+    , m_fixtureCalibrationAction(NULL)
     , m_addFolderAction(NULL)
     , m_cloneAction(NULL)
     , m_deleteAction(NULL)
@@ -274,6 +276,13 @@ void FunctionManager::initActions()
     connect(m_wizardAction, SIGNAL(triggered(bool)),
             this, SLOT(slotWizard()));
 
+
+    m_fixtureCalibrationAction= new QAction(QIcon(":/wizard.png"),
+                                            tr("Function &Wizard"), this);
+
+    connect(m_fixtureCalibrationAction, SIGNAL(triggered(bool)),
+                       this, SLOT(slotFixtureCalib()));
+
     /* Edit actions */
     m_cloneAction = new QAction(QIcon(":/editcopy.png"),
                                 tr("&Clone"), this);
@@ -317,6 +326,7 @@ void FunctionManager::initToolbar()
     m_toolbar->addSeparator();
     m_toolbar->addAction(m_autostartAction);
     m_toolbar->addAction(m_wizardAction);
+    m_toolbar->addAction(m_fixtureCalibrationAction);
     m_toolbar->addSeparator();
     m_toolbar->addAction(m_cloneAction);
     m_toolbar->addSeparator();
@@ -559,6 +569,13 @@ void FunctionManager::slotSelectAutostartFunction()
 void FunctionManager::slotWizard()
 {
     FunctionWizard fw(this, m_doc);
+    if (fw.exec() == QDialog::Accepted)
+        m_tree->updateTree();
+}
+
+void FunctionManager::slotFixtureCalib()
+{
+    FixtureCalibration fw(this, m_doc);
     if (fw.exec() == QDialog::Accepted)
         m_tree->updateTree();
 }

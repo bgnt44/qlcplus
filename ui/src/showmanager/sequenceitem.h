@@ -69,7 +69,7 @@ protected:
 
 protected slots:
     void slotSequenceChanged(quint32);
-
+    float paintChaser(QPainter *painter, Chaser* chaser, float xpos, float maxTime);
 private:
     /** Calculate sequence width for paint() and boundingRect() */
     void calculateWidth();

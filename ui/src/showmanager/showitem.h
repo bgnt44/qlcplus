@@ -249,7 +249,7 @@ signals:
      * @brief itemDropped signal emitted when the user drops and item after dragging it
      */
     void itemDropped(QGraphicsSceneMouseEvent *, ShowItem *);
-    void itemSized(QGraphicsSceneMouseEvent *, ShowItem *);
+    void itemSized(QGraphicsSceneMouseEvent *, ShowItem *, bool);
 
     /**
      * @brief alignToCursor signal emitted to request the item alignment to the
@@ -278,6 +278,9 @@ protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    bool m_lastStepUpdate = false;
+    void keyReleaseEvent(QKeyEvent *event);
 
 protected:
     /** Font used for the item's labels */

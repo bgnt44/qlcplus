@@ -97,7 +97,8 @@ HEADERS += aboutbox.h \
            simpledeskengine.h \
            speeddial.h \
            speeddialwidget.h \
-           universeitemwidget.h
+           universeitemwidget.h \
+    fixturecalibration.h
 
 # Monitor headers
 HEADERS += monitor/monitor.h \
@@ -193,7 +194,8 @@ FORMS += aboutbox.ui \
          sceneeditor.ui \
          scripteditor.ui \
          selectinputchannel.ui \
-         showmanager/showeditor.ui
+         showmanager/showeditor.ui \
+    fixturecalibration.ui
 
 # Virtual Console Forms
 FORMS += virtualconsole/addvcbuttonmatrix.ui \
@@ -272,7 +274,8 @@ SOURCES += aboutbox.cpp \
            simpledeskengine.cpp \
            speeddial.cpp \
            speeddialwidget.cpp \
-           universeitemwidget.cpp
+           universeitemwidget.cpp \
+    fixturecalibration.cpp
 
 # Monitor sources
 SOURCES += monitor/monitor.cpp \

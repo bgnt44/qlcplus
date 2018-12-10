@@ -218,8 +218,11 @@ void MultiTrackView::setItemCommonProperties(ShowItem *item, ShowFunction *func,
     connect(item, SIGNAL(itemDropped(QGraphicsSceneMouseEvent *, ShowItem *)),
             this, SLOT(slotItemMoved(QGraphicsSceneMouseEvent *, ShowItem *)));
 
+    connect(item, SIGNAL(itemSized(QGraphicsSceneMouseEvent*,ShowItem*,bool)),
+            this, SLOT(slotItemSizedChanged(QGraphicsSceneMouseEvent *, ShowItem *,bool)));
+
     connect(item, SIGNAL(itemSized(QGraphicsSceneMouseEvent*,ShowItem*)),
-            this, SLOT(slotItemSizedChanged(QGraphicsSceneMouseEvent *, ShowItem *)));
+            this, SLOT(slotItemSizedStepChanged(QGraphicsSceneMouseEvent *, ShowItem *)));
 
     connect(item, SIGNAL(alignToCursor(ShowItem*)),
             this, SLOT(slotAlignToCursor(ShowItem*)));
@@ -265,7 +268,7 @@ int MultiTrackView::getTrackHeight(int trackNum)
 
 ShowItem* MultiTrackView::GetItem(ShowFunction* function)
 {
-    ShowItem*  currentItem;
+    ShowItem*  currentItem = nullptr;
     foreach(ShowItem* item, m_items)
     {
         if(item->showFunction() == function)
@@ -712,7 +715,7 @@ void MultiTrackView::slotViewScrolled(int)
     //qDebug() << Q_FUNC_INFO << "Percentage: " << value;
 }
 
-void MultiTrackView::slotItemSizedChanged(QGraphicsSceneMouseEvent *event, ShowItem *item)
+void MultiTrackView::slotItemSizedChanged(QGraphicsSceneMouseEvent *event, ShowItem *item, bool stretch)
 {
     qDebug() << Q_FUNC_INFO << "event - <" << event->pos().toPoint().x() << "> - <" << event->pos().toPoint().y() << ">";
     // align to the appropriate track
@@ -731,11 +734,14 @@ void MultiTrackView::slotItemSizedChanged(QGraphicsSceneMouseEvent *event, ShowI
         s_time = getTimeFromPosition(TRACK_WIDTH + item->getWidth());
     }
 
-    item->setDuration(s_time, false);
+    item->setDuration(s_time, stretch);
     m_scene->update();
-    BuildTrackDisplay();
+
     emit showItemMoved(item, getTimeFromPosition(item->x() + event->pos().toPoint().x()), moved);
+    BuildTrackDisplay();
 }
+
+
 void MultiTrackView::slotItemMoved(QGraphicsSceneMouseEvent *event, ShowItem *item)
 {
     qDebug() << Q_FUNC_INFO << "event - <" << event->pos().toPoint().x() << "> - <" << event->pos().toPoint().y() << ">";

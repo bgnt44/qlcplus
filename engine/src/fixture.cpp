@@ -30,7 +30,6 @@
 #include "qlcfixturedef.h"
 #include "qlccapability.h"
 #include "qlcchannel.h"
-
 #include "fixture.h"
 #include "doc.h"
 
@@ -41,12 +40,11 @@
 Fixture::Fixture(QObject* parent) : QObject(parent)
 {
     m_id = Fixture::invalidId();
-
     m_address = 0;
     m_channels = 0;
-
     m_fixtureDef = NULL;
     m_fixtureMode = NULL;
+
 }
 
 Fixture::~Fixture()
@@ -161,6 +159,14 @@ quint32 Fixture::universeAddress() const
     return m_address;
 }
 
+FixtureCalibrationData* Fixture::getCalibrationData()
+{
+    if(m_fixtureCalibrationData == nullptr)
+    {
+        m_fixtureCalibrationData = new FixtureCalibrationData();
+    }
+    return m_fixtureCalibrationData;
+}
 /*****************************************************************************
  * Channels
  *****************************************************************************/
@@ -953,6 +959,11 @@ bool Fixture::loadXML(QXmlStreamReader &xmlDoc, Doc *doc,
                 xmlDoc.skipCurrentElement();
             }
         }
+        else if (xmlDoc.name() == KXMLFixtureCalibrationData)
+        {
+            m_fixtureCalibrationData = new FixtureCalibrationData();
+            m_fixtureCalibrationData->loadXML(xmlDoc);
+        }
         else
         {
             qWarning() << Q_FUNC_INFO << "Unknown fixture tag:" << xmlDoc.name();
@@ -1157,6 +1168,13 @@ bool Fixture::saveXML(QXmlStreamWriter *doc) const
                 doc->writeEndElement();
             }
         }
+    }
+
+    if (m_fixtureCalibrationData != NULL)
+    {
+        doc->writeStartElement(KXMLFixtureCalibrationData);
+        m_fixtureCalibrationData->saveXML(doc);
+        doc->writeEndElement();
     }
 
     /* End the <Fixture> tag */

@@ -42,7 +42,7 @@ static bool compareShowFunctions(const ShowFunction *sf1, const ShowFunction *sf
 }
 
 ShowRunner::ShowRunner(const Doc* doc, quint32 showID, quint32 startTime)
-    : QObject(NULL)
+    : QObject(nullptr)
     , m_doc(doc)
     , m_elapsedTime(startTime)
     , m_totalRunTime(0)
@@ -52,13 +52,13 @@ ShowRunner::ShowRunner(const Doc* doc, quint32 showID, quint32 startTime)
     Q_ASSERT(showID != Show::invalidId());
 
     m_show = qobject_cast<Show*>(m_doc->function(showID));
-    if (m_show == NULL)
+    if (m_show == nullptr)
         return;
 
     foreach(Track *track, m_show->tracks())
     {
         // some sanity checks
-        if (track == NULL ||
+        if (track == nullptr ||
             track->id() == Track::invalidId())
                 continue;
 
@@ -72,7 +72,7 @@ ShowRunner::ShowRunner(const Doc* doc, quint32 showID, quint32 startTime)
                 continue;
 
             Function *f = m_doc->function(sfunc->functionID());
-            if (f == NULL)
+            if (f == nullptr)
                 continue;
 
             m_functions.append(sfunc);

@@ -59,6 +59,7 @@ HEADERS += avolitesd4parser.h \
            qlcphysical.h \
            utils.h
 
+
 greaterThan(QT_MAJOR_VERSION, 4) {
   HEADERS += video.h
 }
@@ -81,6 +82,7 @@ HEADERS += bus.h \
            efxfixture.h \
            fadechannel.h \
            fixture.h \
+           fixturecalibrationdata.h \
            fixturegroup.h \
            function.h \
            genericdmxsource.h \
@@ -139,6 +141,7 @@ SOURCES += avolitesd4parser.cpp \
            qlcmodifierscache.cpp \
            qlcphysical.cpp
 
+
 greaterThan(QT_MAJOR_VERSION, 4) {
   SOURCES += video.cpp
 }
@@ -159,6 +162,7 @@ SOURCES += bus.cpp \
            efxfixture.cpp \
            fadechannel.cpp \
            fixture.cpp \
+           fixturecalibrationdata.cpp\
            fixturegroup.cpp \
            function.cpp \
            genericdmxsource.cpp \

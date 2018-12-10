@@ -169,7 +169,8 @@ protected slots:
     void slotTrackSoloFlagChanged(TrackItem*, bool);
     void slotTrackMuteFlagChanged(TrackItem*, bool);
     void slotViewScrolled(int);
-    void slotItemSizedChanged(QGraphicsSceneMouseEvent *event, ShowItem *item);
+    void slotItemSizedChanged(QGraphicsSceneMouseEvent *, ShowItem *,bool);
+
     void slotItemMoved(QGraphicsSceneMouseEvent *event, ShowItem *item);
     void slotAlignToCursor(ShowItem *item);
 

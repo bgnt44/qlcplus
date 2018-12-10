@@ -37,7 +37,7 @@ contains(FORCECONFIG, release) {
 } else {
   # Enable the following 2 lines when making a release
   CONFIG         -= release
-#  DEFINES        += QT_NO_DEBUG_OUTPUT
+  #DEFINES        += QT_NO_DEBUG_OUTPUT
 
   # Disable this when making a release
   CONFIG         += debug

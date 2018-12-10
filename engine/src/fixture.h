@@ -29,9 +29,10 @@
 
 #include "qlcchannel.h"
 #include "qlcfixturedef.h"
+#include "fixturecalibrationdata.h"
 
 class QString;
-
+class fixtureCalibrationData;
 class QLCFixtureDefCache;
 class ChannelModifier;
 class QLCFixtureMode;
@@ -55,7 +56,7 @@ class Doc;
 #define KXMLFixtureExcludeFade "ExcludeFade"
 #define KXMLFixtureForcedHTP "ForcedHTP"
 #define KXMLFixtureForcedLTP "ForcedLTP"
-
+#define KXMLFixtureCalibrationData "DataCalib"
 #define KXMLFixtureChannelModifier "Modifier"
 #define KXMLFixtureChannelIndex "Channel"
 #define KXMLFixtureModifierName "Name"
@@ -316,6 +317,18 @@ protected:
     /** Number of channels (ONLY for dimmer fixtures!) */
     quint32 m_channels;
 
+
+    quint32 pan0;
+    quint32 pan1;
+    quint32 pan2;
+    quint32 pan3;
+    quint32 pan4;
+    quint32 tilt0;
+    quint32 tilt1;
+    quint32 tilt2;
+    quint32 tilt3;
+    quint32 tilt4;
+
     /** List holding the channels indices to exlude from fade transitions */
     QList<int> m_excludeFadeIndices;
 
@@ -454,6 +467,17 @@ public:
     QLCFixtureMode *genericRGBPanelMode(QLCFixtureDef *def, Components components, quint32 width, quint32 height);
 
     /*********************************************************************
+     * Fixture Calibration
+     *********************************************************************/
+public:
+
+    FixtureCalibrationData* getCalibrationData();
+
+protected:
+
+    FixtureCalibrationData* m_fixtureCalibrationData;
+
+    /*********************************************************************
      * Load & Save
      *********************************************************************/
 public:
@@ -494,6 +518,7 @@ public:
      * @return A sort-of HTML-RTF-gibberish for Fixture Manager
      */
     QString status() const;
+
 };
 
 /** @} */

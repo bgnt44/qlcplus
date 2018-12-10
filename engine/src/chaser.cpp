@@ -213,6 +213,28 @@ QList <ChaserStep> Chaser::steps() const
     return m_steps;
 }
 
+void Chaser::setLastStepDuration(quint32 msec)
+{
+    if (durationMode() == Chaser::Common)
+    {
+        int stepsCount = m_steps.count();
+        if (stepsCount == 0)
+            stepsCount = 1;
+        setDuration(msec / stepsCount);
+    }
+    else
+    {
+        int relativeDuration = msec - totalDuration();
+        if( stepAt(stepsCount()-1)->hold + relativeDuration < 200 )
+        {
+            relativeDuration = 200;
+        }
+        stepAt(stepsCount()-1)->hold += relativeDuration;
+        stepAt(stepsCount()-1)->duration += relativeDuration;
+    }
+    emit changed(this->id());
+}
+
 void Chaser::setTotalDuration(quint32 msec)
 {
     if (durationMode() == Chaser::Common)

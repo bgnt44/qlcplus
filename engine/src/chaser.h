@@ -140,7 +140,7 @@ public:
 
     /** @reimpl */
     void setTotalDuration(quint32 msec);
-
+    void setLastStepDuration(quint32 msec);
     /** @reimpl */
     quint32 totalDuration();
 
