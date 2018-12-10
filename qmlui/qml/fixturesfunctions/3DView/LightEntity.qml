@@ -2,7 +2,7 @@
   Q Light Controller Plus
   LightEntity.qml
 
-  Copyright (c) Massimo Callegari
+  Copyright (c) Massimo Callegari, Eric Arnebäck
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -66,17 +66,17 @@ Entity
 
     property Transform headTransform: Transform { translation: Qt.vector3d(0.1 * headIndex, 0, 0) }
 
-    function setupScattering(shadingEffect, scatteringEffect, depthEffect, sceneEntity)
+    function setupScattering(sceneEntity)
     {
-        shadingCone.coneEffect = shadingEffect
+        shadingCone.coneEffect = sceneEntity.spotlightShadingEffect
         shadingCone.parent = sceneEntity
         shadingCone.spotlightConeMesh = sceneEntity.coneMesh
 
-        //scatteringCone.coneEffect = scatteringEffect
+        //scatteringCone.coneEffect = sceneEntity.spotlightScatteringEffect
         scatteringCone.parent = sceneEntity
         scatteringCone.spotlightConeMesh = sceneEntity.coneMesh
 
-        outDepthCone.coneEffect = depthEffect
+        outDepthCone.coneEffect = sceneEntity.outputFrontDepthEffect
         outDepthCone.parent = sceneEntity
         outDepthCone.spotlightConeMesh = sceneEntity.coneMesh
     }

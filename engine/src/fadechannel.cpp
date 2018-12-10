@@ -206,7 +206,7 @@ void FadeChannel::setStart(uchar value)
 
 uchar FadeChannel::start() const
 {
-    return m_start;
+    return uchar(m_start);
 }
 
 void FadeChannel::setTarget(uchar value)
@@ -216,7 +216,7 @@ void FadeChannel::setTarget(uchar value)
 
 uchar FadeChannel::target() const
 {
-    return m_target;
+    return uchar(m_target);
 }
 
 void FadeChannel::setCurrent(uchar value)
@@ -226,7 +226,7 @@ void FadeChannel::setCurrent(uchar value)
 
 uchar FadeChannel::current() const
 {
-    return m_current;
+    return uchar(m_current);
 }
 
 uchar FadeChannel::current(qreal intensity) const
@@ -283,6 +283,7 @@ uchar FadeChannel::calculateCurrent(uint fadeTime, uint elapsedTime)
         // Return the target value if all time has been consumed
         // or if the channel has been marked ready.
         m_current = m_target;
+        setReady(true);
     }
     else if (elapsedTime == 0)
     {
@@ -295,6 +296,6 @@ uchar FadeChannel::calculateCurrent(uint fadeTime, uint elapsedTime)
         m_current += m_start;
     }
 
-    return current();
+    return uchar(m_current);
 }
 

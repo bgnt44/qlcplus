@@ -2,7 +2,7 @@
   Q Light Controller Plus
   3DView.qml
 
-  Copyright (c) Massimo Callegari
+  Copyright (c) Massimo Callegari, Eric Arnebäck
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -60,13 +60,12 @@ Rectangle
         anchors.fill: parent
         aspects: ["input", "logic"]
 
-        function updateSceneGraph(create)
+        function updateFrameGraph(create)
         {
             var ic
             var iHead
             var headEntity
             var component, component2
-            var sgNode
             var fixtures = []
             var fixtureItem
 
@@ -113,10 +112,10 @@ Rectangle
                     {
                         headEntity = fixtureItem.getHead(iHead)
 
-                        sgNode = component.createObject(frameGraph.myShadowFrameGraphNode,
+                        component.createObject(frameGraph.myShadowFrameGraphNode,
                         {
-                            "sceneDeferredLayer": sceneEntity.deferredLayer,
-                            "fixtureItem": headEntity
+                            "fixtureItem": headEntity,
+                            "layers": sceneEntity.deferredLayer
                         });
                     }
                 }
@@ -126,20 +125,20 @@ Rectangle
             if (component.status === Component.Error)
                 console.log("Error loading component:", component.errorString())
 
-            sgNode = component.createObject(frameGraph.myCameraSelector,
+            component.createObject(frameGraph.myCameraSelector,
             {
                 "gBuffer": gBufferTarget,
-                "sceneDeferredLayer": sceneEntity.deferredLayer,
+                "layers": sceneEntity.deferredLayer,
             });
 
             component = Qt.createComponent("RenderSelectionBoxesFilter.qml");
             if (component.status === Component.Error)
                 console.log("Error loading component:", component.errorString())
 
-            sgNode = component.createObject(frameGraph.myCameraSelector,
+            component.createObject(frameGraph.myCameraSelector,
             {
                 "gBuffer": gBufferTarget,
-                "layer": sceneEntity.selectionLayer,
+                "layers": sceneEntity.selectionLayer,
             });
 
             var texChainTargets = [texChainTarget0, texChainTarget1, texChainTarget2, texChainTarget3, texChainTarget4]         
@@ -161,7 +160,7 @@ Rectangle
             if (component.status === Component.Error)
                 console.log("Error loading component:", component.errorString());
 
-            sgNode = component.createObject(frameGraph.myCameraSelector,
+            component.createObject(frameGraph.myCameraSelector,
             {
                 "gBuffer": gBufferTarget,
                 "screenQuadLayer": screenQuadGrabBrightEntity.quadLayer,
@@ -180,7 +179,7 @@ Rectangle
             {
                 dim = (1 << (ic + 1))
 
-                sgNode = component.createObject(frameGraph.myCameraSelector,
+                component.createObject(frameGraph.myCameraSelector,
                 {
                     "inTex": texChainTextures[ic],
                     "screenQuadLayer": texChainDownsampleEntities[ic].quadLayer,
@@ -196,7 +195,7 @@ Rectangle
             for (ic = 0; ic < (TEX_CHAIN_LEN - 1); ++ic)
             {
                 dim = (1 << (TEX_CHAIN_LEN - 2 - ic))
-                sgNode = component.createObject(frameGraph.myCameraSelector,
+                component.createObject(frameGraph.myCameraSelector,
                 {
                     "inTex": texChainTextures[TEX_CHAIN_LEN - 1 - ic],
                     "screenQuadLayer": texChainUpsampleEntities[ic].quadLayer,
@@ -209,7 +208,7 @@ Rectangle
             component = Qt.createComponent("DirectionalLightFilter.qml");
             if (component.status === Component.Error)
                 console.log("Error loading component:", component.errorString())
-            sgNode = component.createObject(frameGraph.myCameraSelector,
+            component.createObject(frameGraph.myCameraSelector,
             {
                 "gBuffer": gBufferTarget,
                 "screenQuadLayer": screenQuadEntity.layer,
@@ -234,7 +233,7 @@ Rectangle
                 {
                     headEntity = fixtureItem.getHead(iHead)
 
-                    sgNode = component.createObject(frameGraph.myCameraSelector,
+                    component.createObject(frameGraph.myCameraSelector,
                     {
                         "gBuffer": gBufferTarget,
                         "shadowTex": headEntity.depthTex,
@@ -267,13 +266,13 @@ Rectangle
                 {
                     headEntity = fixtureItem.getHead(iHead)
 
-                    sgNode = component.createObject(frameGraph.myCameraSelector,
+                    component.createObject(frameGraph.myCameraSelector,
                     {
                         "frontDepth": depthTarget,
                         "outputDepthLayer": headEntity.outputDepthLayer
                     });
 
-                    sgNode = component2.createObject(frameGraph.myCameraSelector,
+                    component2.createObject(frameGraph.myCameraSelector,
                     {
                         "fixtureItem": headEntity,
                         "frontDepth": depthTarget,
@@ -290,7 +289,7 @@ Rectangle
             if (component.status === Component.Error)
                 console.log("Error loading component:", component.errorString());
 
-            sgNode = component.createObject(frameGraph.myCameraSelector,
+            component.createObject(frameGraph.myCameraSelector,
             {
                 "hdrTexture": frameTarget.color,
                 "bloomTexture": texChainTextures[0],
@@ -302,7 +301,7 @@ Rectangle
             if (component.status === Component.Error)
                 console.log("Error loading component:", component.errorString())
 
-            sgNode = component.createObject(frameGraph.myCameraSelector,
+            component.createObject(frameGraph.myCameraSelector,
             {
                 "inTexture": hdr0ColorTexture,
                 "outRenderTarget": hdr1RenderTarget,
@@ -313,7 +312,7 @@ Rectangle
             if (component.status === Component.Error)
                 console.log("Error loading component:", component.errorString())
 
-            sgNode = component.createObject(frameGraph.myCameraSelector,
+            component.createObject(frameGraph.myCameraSelector,
             {
                 "inTexture": hdr1ColorTexture,
                 "screenQuadBlitLayer": screenQuadBlitEntity.quadLayer
@@ -343,92 +342,92 @@ Rectangle
             GenericScreenQuadEntity
             {
                 id: screenQuadFXAAEntity
-                quadLayer : Layer { }
-                quadEffect : FXAAEffect { }
+                quadLayer: Layer { }
+                quadEffect: FXAAEffect { }
             }
     
             GenericScreenQuadEntity
             {
                 id: screenQuadBlitEntity
-                quadLayer : Layer { }
-                quadEffect : BlitEffect { }
+                quadLayer: Layer { }
+                quadEffect: BlitEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadGrabBrightEntity
-                quadLayer : Layer { }
-                quadEffect : GrabBrightEffect { }
+                quadLayer: Layer { }
+                quadEffect: GrabBrightEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadDownsampleEntity0
-                quadLayer : Layer { }
-                quadEffect : DownsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: DownsampleEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadDownsampleEntity1
-                quadLayer : Layer { }
-                quadEffect : DownsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: DownsampleEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadDownsampleEntity2
-                quadLayer : Layer { }
-                quadEffect : DownsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: DownsampleEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadDownsampleEntity3
-                quadLayer : Layer { }
-                quadEffect : DownsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: DownsampleEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadDownsampleEntity4
-                quadLayer : Layer { }
-                quadEffect : DownsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: DownsampleEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadUpsampleEntity0
-                quadLayer : Layer { }
-                quadEffect : UpsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: UpsampleEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadUpsampleEntity1
-                quadLayer : Layer { }
-                quadEffect : UpsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: UpsampleEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadUpsampleEntity2
-                quadLayer : Layer { }
-                quadEffect : UpsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: UpsampleEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadUpsampleEntity3
-                quadLayer : Layer { }
-                quadEffect : UpsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: UpsampleEffect { }
             }
 
             GenericScreenQuadEntity
             {
                 id: screenQuadUpsampleEntity4
-                quadLayer : Layer { }
-                quadEffect : UpsampleEffect { }
+                quadLayer: Layer { }
+                quadEffect: UpsampleEffect { }
             }
 
             ScreenQuadEntity { id: screenQuadEntity }
@@ -459,7 +458,6 @@ Rectangle
                 attachments: [
                     RenderTargetOutput
                     {
-                        objectName: "color"
                         attachmentPoint: RenderTargetOutput.Color0
                         texture: texChainTexture0
                     }
@@ -488,7 +486,6 @@ Rectangle
                 attachments: [
                     RenderTargetOutput
                     {
-                        objectName: "color"
                         attachmentPoint: RenderTargetOutput.Color0
                         texture: texChainTexture1
                     }
@@ -517,7 +514,6 @@ Rectangle
                 attachments: [
                     RenderTargetOutput
                     {
-                        objectName: "color"
                         attachmentPoint: RenderTargetOutput.Color0
                         texture: texChainTexture2
                     }
@@ -546,11 +542,26 @@ Rectangle
                 attachments: [
                     RenderTargetOutput
                     {
-                        objectName: "color"
                         attachmentPoint: RenderTargetOutput.Color0
                         texture: texChainTexture3
                     }
                 ]
+            }
+
+            Texture2D
+            {
+                id: texChainTexture4
+                width: 64
+                height: 64
+                format: Texture.RGBA32F
+                generateMipMaps: false
+                magnificationFilter: Texture.Linear
+                minificationFilter: Texture.Linear
+                wrapMode
+                {
+                    x: WrapMode.ClampToEdge
+                    y: WrapMode.ClampToEdge
+                }
             }
 
             RenderTarget
@@ -559,24 +570,8 @@ Rectangle
                 attachments: [
                     RenderTargetOutput
                     {
-                        objectName: "color"
                         attachmentPoint: RenderTargetOutput.Color0
-                        texture:
-                            Texture2D
-                            {
-                                id: texChainTexture4
-                                width: 64
-                                height: 64
-                                format: Texture.RGBA32F
-                                generateMipMaps: false
-                                magnificationFilter: Texture.Linear
-                                minificationFilter: Texture.Linear
-                                wrapMode
-                                {
-                                    x: WrapMode.ClampToEdge
-                                    y: WrapMode.ClampToEdge
-                                }
-                            }
+                        texture: texChainTexture4
                     }
                 ] // attachments
             }   
@@ -604,7 +599,6 @@ Rectangle
                 attachments: [
                     RenderTargetOutput
                     {
-                        objectName: "color"
                         attachmentPoint: RenderTargetOutput.Color0
                         texture: hdr0ColorTexture
                     }
@@ -634,7 +628,6 @@ Rectangle
                 attachments: [
                     RenderTargetOutput
                     {
-                        objectName: "color"
                         attachmentPoint: RenderTargetOutput.Color0
                         texture: hdr1ColorTexture
                     }
@@ -643,11 +636,11 @@ Rectangle
 
             DepthTarget { id: depthTarget }
 
-            components : [
+            components: [
                 DeferredRenderer
                 {
                     id: frameGraph
-                    camera : sceneEntity.camera
+                    camera: sceneEntity.camera
                 },
                 InputSettings {}
             ]

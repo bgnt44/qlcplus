@@ -64,7 +64,6 @@ MainView3D::MainView3D(QQuickView *view, Doc *doc, QObject *parent)
     , m_sceneRootEntity(nullptr)
     , m_quadEntity(nullptr)
     , m_gBuffer(nullptr)
-    , m_frontDepthTarget(nullptr)
     , m_latestGenericID(0)
     , m_renderQuality(HighQuality)
     , m_stageEntity(nullptr)
@@ -148,7 +147,7 @@ void MainView3D::resetItems()
 {
     qDebug() << "Resetting 3D items...";
 
-    QMetaObject::invokeMethod(m_scene3D, "updateSceneGraph", Q_ARG(QVariant, false));
+    QMetaObject::invokeMethod(m_scene3D, "updateFrameGraph", Q_ARG(QVariant, false));
 
     QMapIterator<quint32, SceneItem*> it(m_entitiesMap);
     while(it.hasNext())
@@ -357,22 +356,15 @@ void MainView3D::initialize3DProperties()
         return;
     }
 
-    m_frontDepthTarget = m_scene3D->findChild<QRenderTarget *>("depthTarget");
-    if (m_frontDepthTarget == nullptr)
-    {
-        qDebug() << "frontDepth not found!";
-        return;
-    }
-
     if (m_frameAction)
         m_sceneRootEntity->addComponent(m_frameAction);
 
-    qDebug() << m_sceneRootEntity << m_quadEntity << m_gBuffer << m_frontDepthTarget;
+    qDebug() << m_sceneRootEntity << m_quadEntity << m_gBuffer;
 
     if (m_stageEntity == nullptr)
         createStage();
 
-    QMetaObject::invokeMethod(m_scene3D, "updateSceneGraph", Q_ARG(QVariant, true));
+    QMetaObject::invokeMethod(m_scene3D, "updateFrameGraph", Q_ARG(QVariant, true));
 }
 
 QString MainView3D::makeShader(QString str) {
@@ -889,11 +881,8 @@ void MainView3D::initializeFixture(quint32 itemID, QEntity *fxEntity, QSceneLoad
 
     QLayer *sceneDeferredLayer = m_sceneRootEntity->property("deferredLayer").value<QLayer *>();
     QEffect *sceneEffect = m_sceneRootEntity->property("geometryPassEffect").value<QEffect *>();
-    QEffect *spotlightShadingEffect = m_sceneRootEntity->property("spotlightShadingEffect").value<QEffect *>();
-    QEffect *spotlightScatteringEffect = m_sceneRootEntity->property("spotlightScatteringEffect").value<QEffect *>();
-    QEffect *outputFrontDepthEffect = m_sceneRootEntity->property("outputFrontDepthEffect").value<QEffect *>();
 
-    qDebug() << sceneDeferredLayer << sceneEffect << spotlightShadingEffect << spotlightScatteringEffect << outputFrontDepthEffect;
+    qDebug() << sceneDeferredLayer << sceneEffect;
 
     QVector3D translation;
     SceneItem *meshRef = m_entitiesMap.value(itemID);
@@ -971,9 +960,6 @@ void MainView3D::initializeFixture(quint32 itemID, QEntity *fxEntity, QSceneLoad
         meshRef->m_rootItem->setProperty("focusMaxDegrees", focusMax);
 
         QMetaObject::invokeMethod(meshRef->m_rootItem, "setupScattering",
-                                  Q_ARG(QVariant, QVariant::fromValue(spotlightShadingEffect)),
-                                  Q_ARG(QVariant, QVariant::fromValue(spotlightScatteringEffect)),
-                                  Q_ARG(QVariant, QVariant::fromValue(outputFrontDepthEffect)),
                                   Q_ARG(QVariant, QVariant::fromValue(m_sceneRootEntity)));
     }
 
@@ -987,7 +973,7 @@ void MainView3D::initializeFixture(quint32 itemID, QEntity *fxEntity, QSceneLoad
     {
         QSizeF size = FixtureUtils::item2DDimension(fxMode, MonitorProperties::TopView);
         QPointF itemPos = FixtureUtils::available2DPosition(m_doc, MonitorProperties::TopView,
-                                                               QRectF(0, 0, size.width(), size.height()));
+                                                            QRectF(0, 0, size.width(), size.height()));
         // add the new fixture to the Doc monitor properties
         fxPos = QVector3D(itemPos.x(), 1000.0, itemPos.y());
         m_monProps->setFixturePosition(fxID, headIndex, linkedIndex, fxPos);
@@ -1031,7 +1017,7 @@ void MainView3D::initializeFixture(quint32 itemID, QEntity *fxEntity, QSceneLoad
     // Update the Scene Graph only when the last fixture has been added to the Scene
     if (m_createItemCount == 0)
     {
-        QMetaObject::invokeMethod(m_scene3D, "updateSceneGraph", Q_ARG(QVariant, true));
+        QMetaObject::invokeMethod(m_scene3D, "updateFrameGraph", Q_ARG(QVariant, true));
 #ifdef SHOW_FRAMEGRAPH
         if (m_scene3DEntity)
             walkNode(m_scene3DEntity, 0);
@@ -1509,7 +1495,10 @@ void MainView3D::createGenericItem(QString filename, int itemID)
     SceneItem *mesh = new SceneItem;
     mesh->m_rootItem = nullptr;
     mesh->m_rootTransform = nullptr;
+    mesh->m_armItem = nullptr;
+    mesh->m_headItem = nullptr;
     mesh->m_selectionBox = nullptr;
+    mesh->m_goboTexture = nullptr;
 
     QEntity *newItem = qobject_cast<QEntity *>(m_genericComponent->create());
     newItem->setParent(m_sceneRootEntity);

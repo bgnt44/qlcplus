@@ -572,7 +572,8 @@ qreal VCCueList::getPrimaryIntensity() const
         value = 1.0;
     else
         value = (qreal)((m_primaryLeft ? m_slider1 : m_slider2)->value()) / 100;
-    return value;
+
+    return value * intensity();
 }
 
 void VCCueList::notifyFunctionStarting(quint32 fid, qreal intensity)
@@ -988,6 +989,8 @@ void VCCueList::startChaser(int startIndex)
     if (ch == NULL)
         return;
 
+    adjustFunctionIntensity(ch, intensity());
+
     ChaserAction action;
     action.m_action = ChaserSetStepIndex;
     action.m_stepIndex = startIndex;
@@ -995,7 +998,6 @@ void VCCueList::startChaser(int startIndex)
     action.m_fadeMode = getFadeMode();
     ch->setAction(action);
 
-    adjustFunctionIntensity(ch, intensity());
     ch->start(m_doc->masterTimer(), functionParent());
     emit functionStarting(m_chaserID);
 }
@@ -1005,6 +1007,7 @@ void VCCueList::stopChaser()
     Chaser *ch = chaser();
     if (ch == NULL)
         return;
+
     ch->stop(functionParent());
     resetIntensityOverrideAttribute();
 }
@@ -1014,10 +1017,11 @@ int VCCueList::getFadeMode()
     if (slidersMode() == Steps)
         return Chaser::FromFunction;
 
-    qreal primary = (qreal)((m_primaryLeft ? m_slider1 : m_slider2)->value()) / 100;
-    qreal secondary = (qreal)((m_primaryLeft ? m_slider2 : m_slider1)->value()) / 100;
+    qreal primary = qreal(((m_primaryLeft ? m_slider1 : m_slider2)->value())) / 100;
+    qreal secondary = qreal(((m_primaryLeft ? m_slider2 : m_slider1)->value())) / 100;
 
-    if (primary != 1.0 && secondary != 0.0)
+    if ( (primary != 1.0 && secondary != 0.0) ||
+        ((primary != 1.0 || secondary != 0.0) && m_linkCheck->isChecked()))
         return m_blendCheck->isChecked() ? Chaser::BlendedCrossfade : Chaser::Crossfade;
 
     return m_blendCheck->isChecked() ? Chaser::Blended : Chaser::FromFunction;
@@ -1220,7 +1224,7 @@ void VCCueList::slotSlider1ValueChanged(int value)
         if (!(ch == NULL || ch->stopped()))
         {
             int stepIndex = m_primaryLeft ? m_primaryIndex : m_secondaryIndex;            
-            ch->adjustStepIntensity((qreal)value / 100, stepIndex, Chaser::FadeControlMode(getFadeMode()));
+            ch->adjustStepIntensity(qreal(value) / 100.0, stepIndex, Chaser::FadeControlMode(getFadeMode()));
             stopStepIfNeeded(ch);
         }
 
@@ -1245,7 +1249,7 @@ void VCCueList::slotSlider2ValueChanged(int value)
     if (!(ch == NULL || ch->stopped()))
     {
         int stepIndex = m_primaryLeft ? m_secondaryIndex : m_primaryIndex;
-        ch->adjustStepIntensity((qreal)value / 100, stepIndex, Chaser::FadeControlMode(getFadeMode()));
+        ch->adjustStepIntensity(qreal(value) / 100.0, stepIndex, Chaser::FadeControlMode(getFadeMode()));
         stopStepIfNeeded(ch);
     }
 

@@ -293,6 +293,7 @@ void Universe::processFaders()
         if (fader->isEnabled() == false)
             continue;
 
+        //qDebug() << "Processing fader" << fader->name();
         fader->write(this);
     }
 
@@ -306,7 +307,7 @@ void Universe::processFaders()
 void Universe::run()
 {
     m_running = true;
-    int timeout = MasterTimer::tick() * 2;
+    int timeout = int(MasterTimer::tick()) * 2;
 
     qDebug() << "Universe thread started" << id();
 
@@ -961,7 +962,7 @@ bool Universe::writeBlended(int channel, uchar value, Universe::BlendMode blend)
     {
         case NormalBlend:
             return write(channel, value);
-        break;
+
         case MaskBlend:
         {
             if (value)
@@ -973,14 +974,13 @@ bool Universe::writeBlended(int channel, uchar value, Universe::BlendMode blend)
                     value = 0;
             }
             (*m_preGMValues)[channel] = char(value);
-
         }
         break;
         case AdditiveBlend:
         {
             uchar currVal = uchar(m_preGMValues->at(channel));
             //qDebug() << "Universe write additive channel" << channel << ", value:" << currVal << "+" << value;
-            value = qMin((int)currVal + value, 255);
+            value = qMin(int(currVal) + value, 255);
             (*m_preGMValues)[channel] = char(value);
         }
         break;

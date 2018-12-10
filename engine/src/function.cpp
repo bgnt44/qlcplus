@@ -997,7 +997,7 @@ void Function::preRun(MasterTimer* timer)
 {
     Q_UNUSED(timer);
 
-    qDebug() << "Function preRun. Name:" << m_name << "ID: " << m_id;
+    qDebug() << "Function preRun. Name:" << m_name << "ID:" << m_id << "type:" << typeToString(type());
     m_running = true;
 
     emit running(m_id);
@@ -1030,15 +1030,14 @@ void Function::postRun(MasterTimer* timer, QList<Universe *> universes)
     emit stopped(m_id);
 }
 
-void Function::dismissAllFaders(QList<Universe *> universes)
+void Function::dismissAllFaders()
 {
     QMapIterator <quint32, GenericFader*> it(m_fadersMap);
     while (it.hasNext() == true)
     {
         it.next();
-        quint32 universe = it.key();
         GenericFader *fader = it.value();
-        universes[universe]->dismissFader(fader);
+        fader->requestDelete();
     }
 
     m_fadersMap.clear();
