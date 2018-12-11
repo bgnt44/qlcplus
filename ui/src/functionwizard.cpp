@@ -31,6 +31,7 @@
 #include "vccuelist.h"
 #include "rgbmatrix.h"
 #include "vcwidget.h"
+#include "vcxypad.h"
 #include "vcbutton.h"
 #include "vcslider.h"
 #include "vcframe.h"
@@ -330,6 +331,14 @@ void FunctionWizard::updateAvailableFunctionsTree()
                 addFunctionsGroup(fxGrpItem, grpItem,
                                   PaletteGenerator::typetoString(PaletteGenerator::ColourMacro),
                                   PaletteGenerator::ColourMacro);
+            else if (cap.contains(KQLCChannelMovement))
+                addFunctionsGroup(fxGrpItem, grpItem,
+                                  PaletteGenerator::typetoString(PaletteGenerator::Movement),
+                                  PaletteGenerator::Movement);
+            else if (cap.contains("Dimming"))
+                addFunctionsGroup(fxGrpItem, grpItem,
+                                  PaletteGenerator::typetoString(PaletteGenerator::Dimming),
+                                  PaletteGenerator::Dimming);
         }
     }
 
@@ -512,6 +521,16 @@ void FunctionWizard::updateWidgetsTree()
             soloFrameItem->setCheckState(KWidgetName, Qt::Unchecked);
             soloFrameItem->setData(KWidgetName, Qt::UserRole, VCWidget::SoloFrameWidget);
         }
+
+        if (palette->scenes().count() > 0)
+        {
+            soloFrameItem = new QTreeWidgetItem(frame);
+            soloFrameItem->setText(KWidgetName, tr("Presets solo frame"));
+            soloFrameItem->setIcon(KWidgetName, VCWidget::typeToIcon(VCWidget::SoloFrameWidget));
+            soloFrameItem->setFlags(soloFrameItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsTristate);
+            soloFrameItem->setCheckState(KWidgetName, Qt::Unchecked);
+            soloFrameItem->setData(KWidgetName, Qt::UserRole, VCWidget::SoloFrameWidget);
+        }
         foreach(Scene *scene, palette->scenes())
         {
             QTreeWidgetItem *item = NULL;
@@ -641,6 +660,15 @@ VCWidget *FunctionWizard::createWidget(int type, VCWidget *parent, int xpos, int
                 slider->setSliderMode(VCSlider::Level);
             }
             widget = slider;
+        }
+        break;
+        case VCWidget::XYPadWidget:
+        {
+            VCXYPad* pad = new VCXYPad(parent, m_doc);
+            vc->setupWidget(pad, parent);
+            pad->move(QPoint(xpos, ypos));
+            pad->appendFixture(new VCXYPadFixture(m_doc,QVariant()));
+            widget = pad;
         }
         break;
         default:

@@ -56,7 +56,9 @@ public:
         Shutter,
         Gobos,
         ColourMacro,
-        Animation
+        Animation,
+        Movement,
+        Dimming
     };
 
     enum PaletteSubType
@@ -128,6 +130,8 @@ private:
     void createCapabilityScene(QHash<quint32, QList<quint32>> chMap, PaletteGenerator::PaletteSubType subType);
 
     void createRGBMatrices(QList<SceneValue> rgbMap);
+    void createDimmingScene();
+    void createMoveScene();
 
     void createChaser(QString name);
 

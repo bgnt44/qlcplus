@@ -100,6 +100,8 @@ QString PaletteGenerator::typetoString(PaletteGenerator::PaletteType type)
         case SixteenColors: return tr("16 Colours"); break;
         case Shutter: return tr("Shutter macros");
         case Gobos: return tr("Gobo macros");
+        case Movement: return tr("Movement macros");
+        case Dimming: return tr("Dimming macros");
         case ColourMacro: return tr("Colour macros");
         case Animation: return tr("Animations");
         case Undefined:
@@ -156,7 +158,7 @@ QStringList PaletteGenerator::getCapabilities(const Fixture *fixture)
                     case QLCChannel::Magenta: hasMagenta = true; break;
                     case QLCChannel::Yellow: hasYellow = true; break;
                     case QLCChannel::White: hasWhite = true; break;
-                    default: break;
+                    default: caps.append("Dimming"); break;
                 }
             }
             break;
@@ -486,6 +488,54 @@ void PaletteGenerator::createCapabilityScene(QHash<quint32, QList<quint32>> chMa
     }
 }
 
+void PaletteGenerator::createDimmingScene()
+{
+
+    int n = m_fixtures.count();
+    for(int i=0;i<(1<<n);i++)
+    {
+        Scene *scene = new Scene(m_doc);
+        scene->setName("Chaser Dimming ");
+        for(int j=0;j<n;j++)
+        {
+            Fixture* fi = m_fixtures.at(j);
+            int chNum = fi->channelNumber(QLCChannel::Intensity,QLCChannel::MSB);
+            bool max = (i & (1<<j));
+            scene->setValue(fi->id(),chNum, (int)max * 255);
+            scene->setName(scene->name() + (max?"1":"0"));
+
+        }
+         m_scenes.append(scene);
+
+    }
+
+}
+
+void PaletteGenerator::createMoveScene()
+{
+    int n = m_fixtures.count();
+    for(int i=0;i<(1<<n);i++)
+    {
+        Scene *scene = new Scene(m_doc);
+        scene->setName("Move Position ");
+        for(int j=0;j<n;j++)
+        {
+            Fixture* fi = m_fixtures.at(j);
+            int chNumP = fi->channelNumber(QLCChannel::Pan,QLCChannel::MSB);
+            int chNumT = fi->channelNumber(QLCChannel::Tilt,QLCChannel::MSB);
+            bool max = (i & (1<<j));
+            scene->setValue(fi->id(),chNumT, 100 + (int)max * 50);
+            scene->setValue(fi->id(),chNumP, 100 + (int)max * 50);
+
+            scene->setName(scene->name() + (max?"1":"0"));
+
+        }
+         m_scenes.append(scene);
+
+    }
+
+}
+
 void PaletteGenerator::createCapabilityScene(QHash<quint32, quint32> chMap,
                                              PaletteGenerator::PaletteSubType subType)
 {
@@ -694,6 +744,18 @@ void PaletteGenerator::createFunctions(PaletteGenerator::PaletteType type,
         case ColourMacro:
         {
             createCapabilityScene(m_colorMacroList, subType);
+            createChaser(typetoString(type));
+        }
+        break;
+        case Dimming:
+        {
+            createDimmingScene();
+            createChaser(typetoString(type));
+        }
+        break;
+        case Movement:
+        {
+            createMoveScene();
             createChaser(typetoString(type));
         }
         break;

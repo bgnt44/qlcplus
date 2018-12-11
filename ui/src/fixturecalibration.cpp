@@ -171,6 +171,11 @@ void FixtureCalibration::accept()
 {
 
     GenerateShape();
+    m_engine->resetChannel(panChannel);
+    m_engine->resetChannel(tiltChannel);
+    m_engine->resetUniverse(0);
+    m_engine->resetUniverse(1);
+    m_engine->clearContents();
 
     m_doc->setModified();
 
@@ -480,8 +485,15 @@ void FixtureCalibration::setCalibrationData()
 
 Scene* FixtureCalibration::CreateScene(quint32 x, quint32 y, quint32 angle, quint32 current, QString name)
 {
+
+    QString string;
+    for(int i=0; i<fixtureIds().length(); i++)
+    {
+        string += QString::number(fixtureIds()[i]);
+    }
+
     Scene* scene = new Scene(m_doc);
-    scene->setPath("Pack/Move");
+    scene->setPath("AutoCal/"+string+"/Moves");
     scene->setName(name);
     //quint32 compteur = fixtureIds().count();
     //quint32 current = 0;
@@ -518,8 +530,15 @@ Scene* FixtureCalibration::CreateScene(quint32 x, quint32 y, quint32 angle, quin
 
 void FixtureCalibration::GenerateChaser(QString name, QList<Scene*> scenes)
 {
+    QString string;
+    for(int i=0; i<fixtureIds().length(); i++)
+    {
+        string += QString::number(fixtureIds()[i]);
+    }
+
     Chaser* chaser = new Chaser(m_doc);
     chaser->setName(name);
+    chaser->setPath("AutoCal/"+string+"/Moves");
     chaser->setDurationMode(Chaser::PerStep);
     chaser->setFadeInMode(Chaser::PerStep);
     chaser->setFadeOutMode(Chaser::PerStep);
@@ -555,20 +574,32 @@ void FixtureCalibration::GenerateShape()
          Scene* smCross3 = CreateScene(25,50,90,2,"mini_crossing3");
          Scene* smCross4 = CreateScene(25,50,90,3,"mini_crossing4");
 
-         CreateScene(50,50,0,0,"center");
+         Scene* center = CreateScene(50,50,0,0,"center");
 
          Scene* intermediate = CreateScene(25,25,90,0,"intermediate");
          Scene* intermediate2 = CreateScene(25,25,90,1,"intermediate2");
          Scene* intermediate3 = CreateScene(25,25,90,2,"intermediate3");
          Scene* intermediate4 = CreateScene(25,25,90,3,"intermediate4");
 
+         Scene* intermediateAll1 = CreateScene(25,25,0,0,"intermediateAll1");
+         Scene* intermediateAll2 = CreateScene(75,25,0,0,"intermediateAll2");
+         Scene* intermediateAll3 = CreateScene(75,75,0,0,"intermediateAll3");
+         Scene* intermediateAll4 = CreateScene(25,75,0,0,"intermediateAll4");
 
-         GenerateChaser("LeftRight",{sLeftRight,sLeftRight2});
-         GenerateChaser("TopBottom",{sTopBot,sTopBot2});
+         Scene* smallMove = CreateScene(40,40,90,0,"smallMove");
+         Scene* bigmove = CreateScene(3,3,90,3,"smallMove");
+
+         GenerateChaser("Left_Right",{sLeftRight,sLeftRight2});
+         GenerateChaser("Top_Bottom",{sTopBot,sTopBot2});
          GenerateChaser("Crossing",{sCross,sCross2,sCross3,sCross4});
-         GenerateChaser("SmallCrossing",{smCross,smCross2,smCross3,smCross4});
-         GenerateChaser("LeftRight",{sLeftRight,sLeftRight2});
+         GenerateChaser("Small_Crossing",{smCross,smCross2,smCross3,smCross4});
          GenerateChaser("intermediate",{intermediate,intermediate2,intermediate3,intermediate4});
+         GenerateChaser("intermediate_Packed",{intermediate,intermediateAll2,intermediate3,intermediateAll4});
+         GenerateChaser("intermediate_Packed2",{intermediate,intermediateAll3,intermediate3,intermediateAll1});
+
+         GenerateChaser("Random_Move",{center,smCross,sCross4,intermediateAll2,sLeftRight,sTopBot2});
+         GenerateChaser("Flower",{center,smallMove,intermediate3,bigmove,intermediate4,smallMove});
+
      }
 
 }
